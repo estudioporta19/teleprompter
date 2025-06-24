@@ -5,19 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teleprompter Profissional</title>
     <style>
+        /* Estilos globais e reset */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Inter', sans-serif; /* Usando Font Inter conforme instrução */
         }
 
         body {
-            font-family: 'Arial', sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
-            overflow: hidden;
+            overflow: hidden; /* Evita scroll na página principal */
         }
 
+        /* Painel de Controlo */
         .control-panel {
             position: fixed;
             top: 0;
@@ -29,19 +31,22 @@
             display: flex;
             flex-direction: column;
             padding: 20px;
+            overflow-y: auto; /* Permite scroll no painel de controlo em telas pequenas */
         }
 
         .control-panel.hidden {
             display: none;
         }
 
+        /* Cabeçalho */
         .header {
             text-align: center;
             margin-bottom: 20px;
             padding: 20px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
+            border-radius: 15px; /* Cantos arredondados */
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Borda sutil */
         }
 
         .header h1 {
@@ -53,19 +58,22 @@
             background-clip: text;
         }
 
+        /* Grelha de Controlo */
         .control-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsivo para colunas */
             gap: 20px;
             flex: 1;
         }
 
+        /* Secções de Controlo */
         .control-section {
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
+            border-radius: 15px; /* Cantos arredondados */
             padding: 20px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Sombra para profundidade */
         }
 
         .control-section h3 {
@@ -74,12 +82,13 @@
             font-size: 1.3em;
         }
 
+        /* Textarea */
         textarea {
             width: 100%;
             height: 200px;
             background: rgba(0, 0, 0, 0.3);
             border: 2px solid #4ecdc4;
-            border-radius: 10px;
+            border-radius: 10px; /* Cantos arredondados */
             padding: 15px;
             color: white;
             font-size: 16px;
@@ -92,6 +101,7 @@
             color: rgba(255, 255, 255, 0.6);
         }
 
+        /* Input de Ficheiro */
         .file-input-wrapper {
             position: relative;
             display: inline-block;
@@ -107,10 +117,11 @@
             padding: 12px 24px;
             background: linear-gradient(45deg, #ff6b6b, #ee5a52);
             color: white;
-            border-radius: 25px;
+            border-radius: 25px; /* Cantos arredondados */
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
 
         .file-label:hover {
@@ -118,17 +129,19 @@
             box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
         }
 
+        /* Botões de Controlo */
         .control-button {
             padding: 15px 30px;
             margin: 5px;
             background: linear-gradient(45deg, #4ecdc4, #44a08d);
             border: none;
-            border-radius: 25px;
+            border-radius: 25px; /* Cantos arredondados */
             color: white;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
 
         .control-button:hover {
@@ -144,6 +157,7 @@
             background: linear-gradient(45deg, #51cf66, #40c057);
         }
 
+        /* Sliders */
         .slider-container {
             margin: 15px 0;
         }
@@ -162,6 +176,7 @@
             background: rgba(255, 255, 255, 0.2);
             outline: none;
             -webkit-appearance: none;
+            appearance: none;
         }
 
         .slider::-webkit-slider-thumb {
@@ -173,6 +188,7 @@
             background: #4ecdc4;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .slider::-webkit-slider-thumb:hover {
@@ -180,6 +196,7 @@
             box-shadow: 0 0 10px rgba(78, 205, 196, 0.6);
         }
 
+        /* Ecrã do Teleprompter (Display) */
         .teleprompter-display {
             position: fixed;
             top: 0;
@@ -188,9 +205,9 @@
             height: 100vh;
             background: #000;
             color: white;
-            display: none;
+            display: none; /* Escondido por padrão */
             overflow: hidden;
-            touch-action: pan-y;
+            touch-action: pan-y; /* Permite scroll vertical touch */
         }
 
         .teleprompter-display.active {
@@ -199,17 +216,22 @@
 
         .text-content {
             padding: 50px;
-            font-size: 48px;
+            font-size: 48px; /* Tamanho de fonte padrão */
             line-height: 1.6;
             font-family: 'Arial', sans-serif;
-            white-space: pre-wrap;
-            transform: translateY(100vh);
-            transition: transform 0.1s linear;
+            white-space: pre-wrap; /* Preserva espaços e quebras de linha */
+            transform: translateY(100vh); /* Começa fora do ecrã */
+            transition: transform 0.1s linear; /* Rolagem suave */
+            /* Centraliza o texto horizontalmente */
+            text-align: center; 
+            width: 100%;
+            box-sizing: border-box; /* Garante que padding não cause overflow */
         }
 
+        /* Instruções */
         .instructions {
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
+            border-radius: 10px; /* Cantos arredondados */
             padding: 15px;
             margin-top: 15px;
             border-left: 4px solid #4ecdc4;
@@ -238,6 +260,7 @@
             color: #4ecdc4;
         }
 
+        /* Status */
         .status {
             position: fixed;
             top: 20px;
@@ -245,24 +268,51 @@
             background: rgba(0, 0, 0, 0.8);
             color: white;
             padding: 10px 20px;
-            border-radius: 20px;
+            border-radius: 20px; /* Cantos arredondados */
             font-weight: bold;
             z-index: 1001;
             display: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            opacity: 0; /* Escondido por padrão */
+            transition: opacity 0.3s ease-in-out;
         }
 
         .status.show {
             display: block;
+            opacity: 1;
+        }
+        .status.error {
+            background-color: #e74c3c;
+        }
+        .status.success {
+            background-color: #27ae60;
+        }
+        .status.info {
+            background-color: #3498db;
         }
 
+        /* Media Queries para Responsividade */
         @media (max-width: 768px) {
             .control-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr; /* Uma coluna em telas menores */
             }
             
             .text-content {
                 padding: 30px;
-                font-size: 32px;
+                font-size: 32px; /* Reduz o tamanho da fonte para telas menores */
+            }
+
+            .control-panel {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .control-button {
+                width: 100%; /* Botões ocupam a largura total */
+                margin: 5px 0;
             }
         }
     </style>
@@ -296,7 +346,7 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                 <h3>⚙️ Controlos</h3>
                 
                 <div class="slider-container">
-                    <label for="speedSlider">Velocidade: <span id="speedValue">2</span></label>
+                    <label for="speedSlider">Velocidade: <span id="speedValue">2.0</span></label>
                     <input type="range" id="speedSlider" class="slider" min="0.5" max="5" value="2" step="0.1">
                 </div>
 
@@ -354,16 +404,19 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                 this.currentPosition = 0;
                 this.animationId = null;
                 this.textContent = '';
-                this.newWindow = null;
-                
+                this.newWindow = null; // Referência para a nova janela
+
                 // Touch handling
                 this.startY = 0;
                 this.startTime = 0;
                 this.isLongPress = false;
+                this.touchSensitivity = 50; // Pixels para detectar swipe
+                this.longPressThreshold = 500; // Milissegundos para long press
                 
                 this.initializeElements();
                 this.setupEventListeners();
                 this.loadSampleText();
+                this.updateFontSize(); // Garante que a fonte inicial esteja correta
             }
 
             initializeElements() {
@@ -389,6 +442,10 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                 this.elements.speedSlider.addEventListener('input', (e) => {
                     this.speed = parseFloat(e.target.value);
                     this.elements.speedValue.textContent = this.speed.toFixed(1);
+                    // Se estiver a rolar na nova janela, atualiza lá também
+                    if (this.newWindow && !this.newWindow.closed && this.newWindow.teleprompterInstance) {
+                        this.newWindow.teleprompterInstance.speed = this.speed;
+                    }
                 });
 
                 this.elements.fontSizeSlider.addEventListener('input', (e) => {
@@ -400,20 +457,33 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                 // Keyboard controls
                 document.addEventListener('keydown', (e) => this.handleKeyboard(e));
 
-                // Touch controls
+                // Touch controls (no display principal)
                 this.elements.teleprompterDisplay.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
                 this.elements.teleprompterDisplay.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
+                // Previne o scroll padrão da página durante o touchmove no display
                 this.elements.teleprompterDisplay.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
-                // Click controls
+                // Click controls (no display principal)
                 this.elements.teleprompterDisplay.addEventListener('click', () => this.togglePlayPause());
 
                 // Text input changes
                 this.elements.textInput.addEventListener('input', () => {
                     this.textContent = this.elements.textInput.value;
+                    // Se a nova janela estiver aberta, atualiza o texto lá também
+                    if (this.newWindow && !this.newWindow.closed) {
+                        const newWindowTextContent = this.newWindow.document.getElementById('textContent');
+                        if (newWindowTextContent) {
+                            newWindowTextContent.textContent = this.textContent;
+                            // Reset position in new window if text changes significantly
+                            if (this.newWindow.teleprompterInstance) {
+                                this.newWindow.teleprompterInstance.textContent = this.textContent;
+                                this.newWindow.teleprompterInstance.resetPosition();
+                            }
+                        }
+                    }
                 });
 
-                // Window close detection
+                // Window close detection for the new window
                 window.addEventListener('beforeunload', () => {
                     if (this.newWindow && !this.newWindow.closed) {
                         this.newWindow.close();
@@ -452,6 +522,17 @@ Boa apresentação!`;
                         this.textContent = e.target.result;
                         this.elements.textInput.value = this.textContent;
                         this.showStatus('Ficheiro carregado com sucesso!', 'success');
+                        // Se a nova janela estiver aberta, atualiza o texto lá
+                        if (this.newWindow && !this.newWindow.closed) {
+                            const newWindowTextContent = this.newWindow.document.getElementById('textContent');
+                            if (newWindowTextContent) {
+                                newWindowTextContent.textContent = this.textContent;
+                                if (this.newWindow.teleprompterInstance) {
+                                    this.newWindow.teleprompterInstance.textContent = this.textContent;
+                                    this.newWindow.teleprompterInstance.resetPosition();
+                                }
+                            }
+                        }
                     };
                     reader.readAsText(file);
                 } else {
@@ -460,59 +541,73 @@ Boa apresentação!`;
             }
 
             handleKeyboard(event) {
-                if (!this.elements.teleprompterDisplay.classList.contains('active')) return;
+                // Se a nova janela estiver aberta e ativa, os controlos do teclado aplicam-se a ela.
+                // Caso contrário, aplicam-se ao display principal (se ativo).
+                const targetTeleprompter = (this.newWindow && !this.newWindow.closed && this.newWindow.teleprompterInstance) 
+                                           ? this.newWindow.teleprompterInstance 
+                                           : (this.elements.teleprompterDisplay.classList.contains('active') ? this : null);
+                
+                if (!targetTeleprompter) return; // Nenhum teleprompter ativo para controlo
 
                 switch(event.code) {
                     case 'Space':
                         event.preventDefault();
-                        this.togglePlayPause();
+                        targetTeleprompter.togglePlayPause();
                         break;
                     case 'ArrowUp':
                         event.preventDefault();
-                        this.adjustSpeed(0.2);
+                        targetTeleprompter.adjustSpeed(0.2);
                         break;
                     case 'ArrowDown':
                         event.preventDefault();
-                        this.adjustSpeed(-0.2);
+                        targetTeleprompter.adjustSpeed(-0.2);
                         break;
                     case 'ArrowLeft':
                         event.preventDefault();
-                        this.adjustPosition(-100);
+                        targetTeleprompter.adjustPosition(-100);
                         break;
                     case 'ArrowRight':
                         event.preventDefault();
-                        this.adjustPosition(100);
+                        targetTeleprompter.adjustPosition(100);
                         break;
                     case 'Escape':
                         event.preventDefault();
-                        this.exitTeleprompter();
+                        // Se estiver na janela principal, sai. Se estiver na nova janela, fecha a nova janela.
+                        if (targetTeleprompter === this) {
+                             this.exitTeleprompter();
+                        } else if (this.newWindow && !this.newWindow.closed) {
+                            this.newWindow.close();
+                            this.newWindow = null; // Limpa a referência
+                            this.showStatus('Janela secundária fechada', 'info');
+                        }
                         break;
                     case 'KeyR':
                         event.preventDefault();
-                        this.resetPosition();
+                        targetTeleprompter.resetPosition();
                         break;
                 }
             }
 
             handleTouchStart(event) {
-                event.preventDefault();
+                event.preventDefault(); // Previne o scroll e outros comportamentos padrão do browser
                 const touch = event.touches[0];
                 this.startY = touch.clientY;
                 this.startTime = Date.now();
                 this.isLongPress = false;
 
                 // Long press detection
-                setTimeout(() => {
-                    if (Date.now() - this.startTime >= 500) {
+                this.longPressTimeout = setTimeout(() => {
+                    if (Date.now() - this.startTime >= this.longPressThreshold) {
                         this.isLongPress = true;
                         this.resetPosition();
                         this.showStatus('Posição reiniciada', 'info');
                     }
-                }, 500);
+                }, this.longPressThreshold);
             }
 
             handleTouchEnd(event) {
-                event.preventDefault();
+                event.preventDefault(); // Previne o scroll e outros comportamentos padrão do browser
+                clearTimeout(this.longPressTimeout); // Limpa o timeout para evitar falso long press
                 if (this.isLongPress) return;
 
                 const touch = event.changedTouches[0];
@@ -523,7 +618,7 @@ Boa apresentação!`;
                 if (Math.abs(deltaY) < 30 && deltaTime < 300) {
                     // Tap
                     this.togglePlayPause();
-                } else if (Math.abs(deltaY) > 50) {
+                } else if (Math.abs(deltaY) > this.touchSensitivity) {
                     // Swipe
                     if (deltaY > 0) {
                         // Swipe up - speed up
@@ -573,12 +668,19 @@ Boa apresentação!`;
                 if (!this.isRunning) return;
 
                 this.currentPosition += this.speed;
-                this.elements.textContentDiv.style.transform = `translateY(${100 - (this.currentPosition / 10)}vh)`;
+                // Move o conteúdo para cima. O 100vh inicial garante que o texto comece fora do ecrã.
+                // Divide por 10 para tornar a velocidade mais sensível, pois translateY usa VH.
+                this.elements.textContentDiv.style.transform = `translateY(${window.innerHeight - (this.currentPosition / 10)}px)`;
 
-                // Check if we've reached the end
-                if (this.currentPosition >= this.getMaxPosition()) {
+                // Verifica se o topo do conteúdo atingiu a posição de "fim"
+                // A posição máxima é calculada para que o último parágrafo saia do ecrã
+                const maxScrollPosition = this.elements.textContentDiv.scrollHeight - (window.innerHeight * 0.1); // Ajuste fino para o final
+                
+                if (this.currentPosition / 10 >= maxScrollPosition) {
                     this.pause();
                     this.showStatus('Fim do texto alcançado', 'info');
+                    // Opcional: Reiniciar automaticamente ou voltar ao início
+                    // this.resetPosition(); 
                     return;
                 }
 
@@ -586,28 +688,49 @@ Boa apresentação!`;
             }
 
             adjustSpeed(delta) {
-                this.speed = Math.max(0, Math.min(5, this.speed + delta));
+                this.speed = Math.max(0.5, Math.min(5, this.speed + delta)); // Limites de velocidade 0.5 a 5
                 this.elements.speedSlider.value = this.speed;
                 this.elements.speedValue.textContent = this.speed.toFixed(1);
                 this.showStatus(`Velocidade: ${this.speed.toFixed(1)}`, 'info');
+                // Sincronizar velocidade com a nova janela, se aberta
+                if (this.newWindow && !this.newWindow.closed && this.newWindow.teleprompterInstance) {
+                    this.newWindow.teleprompterInstance.speed = this.speed;
+                }
             }
 
             adjustPosition(delta) {
-                this.currentPosition = Math.max(0, Math.min(this.getMaxPosition(), this.currentPosition + delta));
-                this.elements.textContentDiv.style.transform = `translateY(${100 - (this.currentPosition / 10)}vh)`;
-            }
-
-            resetPosition() {
-                this.currentPosition = 0;
-                this.elements.textContentDiv.style.transform = 'translateY(100vh)';
-                this.showStatus('Posição reiniciada', 'info');
-            }
-
-            getMaxPosition() {
+                // Ajusta a posição, mantendo-a dentro dos limites do conteúdo.
                 const contentHeight = this.elements.textContentDiv.scrollHeight;
                 const windowHeight = window.innerHeight;
-                return Math.max(0, (contentHeight + windowHeight) * 10);
+                const maxPositionPx = contentHeight + (windowHeight * 0.1); // Permite o texto sair um pouco do ecrã
+
+                let newPosition = this.currentPosition + delta;
+
+                // Garante que a posição não seja negativa e não ultrapasse o final do conteúdo visível
+                this.currentPosition = Math.max(0, Math.min(maxPositionPx * 10, newPosition)); // * 10 para converter em "unidades" da velocidade
+                this.elements.textContentDiv.style.transform = `translateY(${window.innerHeight - (this.currentPosition / 10)}px)`;
+                this.showStatus('Ajustando posição', 'info');
+
+                 // Sincronizar posição com a nova janela, se aberta
+                if (this.newWindow && !this.newWindow.closed && this.newWindow.teleprompterInstance) {
+                    this.newWindow.teleprompterInstance.currentPosition = this.currentPosition;
+                    this.newWindow.teleprompterInstance.elements.textContentDiv.style.transform = `translateY(${this.newWindow.innerHeight - (this.newWindow.teleprompterInstance.currentPosition / 10)}px)`;
+                }
             }
+            
+            resetPosition() {
+                this.currentPosition = 0;
+                this.elements.textContentDiv.style.transform = `translateY(${window.innerHeight}px)`;
+                this.showStatus('Posição reiniciada', 'info');
+                // Sincronizar posição com a nova janela, se aberta
+                if (this.newWindow && !this.newWindow.closed && this.newWindow.teleprompterInstance) {
+                    this.newWindow.teleprompterInstance.currentPosition = 0;
+                    this.newWindow.teleprompterInstance.elements.textContentDiv.style.transform = `translateY(${this.newWindow.innerHeight}px)`;
+                }
+            }
+
+            // Esta função não é mais necessária para o cálculo do maxPosition dinâmico
+            // Já que a lógica foi incorporada em animate() e adjustPosition()
 
             updateFontSize() {
                 this.elements.textContentDiv.style.fontSize = `${this.fontSize}px`;
@@ -627,13 +750,13 @@ Boa apresentação!`;
                 }
 
                 this.elements.textContentDiv.textContent = this.textContent;
-                this.updateFontSize();
-                this.resetPosition();
+                this.updateFontSize(); // Aplica o tamanho da fonte
+                this.resetPosition(); // Reinicia a posição para o início
                 
                 this.elements.controlPanel.classList.add('hidden');
                 this.elements.teleprompterDisplay.classList.add('active');
                 
-                this.showStatus('Teleprompter iniciado - Pressione ESPAÇO para começar', 'success');
+                this.showStatus('Teleprompter iniciado - Pressione ESPAÇO ou toque para começar', 'success');
             }
 
             exitTeleprompter() {
@@ -658,6 +781,12 @@ Boa apresentação!`;
                     return;
                 }
 
+                // Fecha a janela existente se houver uma para evitar múltiplas
+                if (this.newWindow && !this.newWindow.closed) {
+                    this.newWindow.close();
+                    this.newWindow = null;
+                }
+
                 const newWindowHtml = `
                     <!DOCTYPE html>
                     <html lang="pt">
@@ -666,37 +795,282 @@ Boa apresentação!`;
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>Teleprompter - Ecrã Secundário</title>
                         <style>
-                            * { margin: 0; padding: 0; box-sizing: border-box; }
-                            body { background: #000; color: white; overflow: hidden; font-family: Arial, sans-serif; }
+                            * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+                            body { background: #000; color: white; overflow: hidden; }
                             .text-content { 
                                 padding: 50px; 
                                 font-size: ${this.fontSize}px; 
                                 line-height: 1.6; 
                                 white-space: pre-wrap; 
-                                transform: translateY(100vh); 
+                                transform: translateY(${window.innerHeight}px); /* Inicia fora do ecrã da nova janela */
                                 transition: transform 0.1s linear; 
+                                text-align: center; 
+                                width: 100%;
+                                box-sizing: border-box;
+                            }
+                            /* Adicionar estilos para status na nova janela, se necessário */
+                            .status {
+                                position: fixed;
+                                top: 20px;
+                                right: 20px;
+                                background: rgba(0, 0, 0, 0.8);
+                                color: white;
+                                padding: 10px 20px;
+                                border-radius: 20px;
+                                font-weight: bold;
+                                z-index: 1001;
+                                display: none;
+                                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+                                opacity: 0;
+                                transition: opacity 0.3s ease-in-out;
+                            }
+                            .status.show { display: block; opacity: 1; }
+                            .status.error { background-color: #e74c3c; }
+                            .status.success { background-color: #27ae60; }
+                            .status.info { background-color: #3498db; }
+
+                            @media (max-width: 768px) {
+                                .text-content {
+                                    padding: 30px;
+                                    font-size: 32px;
+                                }
                             }
                         </style>
                     </head>
                     <body>
+                        <div class="status" id="status"></div>
                         <div class="text-content" id="textContent">${this.textContent}</div>
+                        <script>
+                            // Script para a nova janela (mini-controlador)
+                            class SecondaryTeleprompterController {
+                                constructor(initialText, initialSpeed, initialFontSize) {
+                                    this.isRunning = false;
+                                    this.speed = initialSpeed;
+                                    this.fontSize = initialFontSize;
+                                    this.currentPosition = 0;
+                                    this.animationId = null;
+                                    this.textContent = initialText; // Recebe o texto inicial
+
+                                    this.elements = {
+                                        textContentDiv: document.getElementById('textContent'),
+                                        status: document.getElementById('status')
+                                    };
+
+                                    this.elements.textContentDiv.textContent = this.textContent;
+                                    this.elements.textContentDiv.style.fontSize = `${this.fontSize}px`;
+                                    this.elements.textContentDiv.style.transform = \`translateY(\${window.innerHeight}px)\`;
+
+                                    // Touch handling for the secondary window
+                                    this.startY = 0;
+                                    this.startTime = 0;
+                                    this.isLongPress = false;
+                                    this.touchSensitivity = 50;
+                                    this.longPressThreshold = 500;
+                                    
+                                    this.setupEventListeners();
+                                }
+
+                                setupEventListeners() {
+                                    document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+                                    this.elements.textContentDiv.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
+                                    this.elements.textContentDiv.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
+                                    this.elements.textContentDiv.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+                                    this.elements.textContentDiv.addEventListener('click', () => this.togglePlayPause());
+                                }
+
+                                handleKeyboard(event) {
+                                    // Controlos de teclado na nova janela
+                                    switch(event.code) {
+                                        case 'Space':
+                                            event.preventDefault();
+                                            this.togglePlayPause();
+                                            break;
+                                        case 'ArrowUp':
+                                            event.preventDefault();
+                                            this.adjustSpeed(0.2);
+                                            break;
+                                        case 'ArrowDown':
+                                            event.preventDefault();
+                                            this.adjustSpeed(-0.2);
+                                            break;
+                                        case 'ArrowLeft':
+                                            event.preventDefault();
+                                            this.adjustPosition(-100);
+                                            break;
+                                        case 'ArrowRight':
+                                            event.preventDefault();
+                                            this.adjustPosition(100);
+                                            break;
+                                        case 'Escape':
+                                            event.preventDefault();
+                                            window.close(); // Fecha a janela secundária
+                                            break;
+                                        case 'KeyR':
+                                            event.preventDefault();
+                                            this.resetPosition();
+                                            break;
+                                    }
+                                }
+
+                                handleTouchStart(event) {
+                                    event.preventDefault();
+                                    const touch = event.touches[0];
+                                    this.startY = touch.clientY;
+                                    this.startTime = Date.now();
+                                    this.isLongPress = false;
+
+                                    this.longPressTimeout = setTimeout(() => {
+                                        if (Date.now() - this.startTime >= this.longPressThreshold) {
+                                            this.isLongPress = true;
+                                            this.resetPosition();
+                                            this.showStatus('Posição reiniciada', 'info');
+                                        }
+                                    }, this.longPressThreshold);
+                                }
+
+                                handleTouchEnd(event) {
+                                    event.preventDefault();
+                                    clearTimeout(this.longPressTimeout);
+                                    if (this.isLongPress) return;
+
+                                    const touch = event.changedTouches[0];
+                                    const endY = touch.clientY;
+                                    const deltaY = this.startY - endY;
+                                    const deltaTime = Date.now() - this.startTime;
+
+                                    if (Math.abs(deltaY) < 30 && deltaTime < 300) {
+                                        this.togglePlayPause();
+                                    } else if (Math.abs(deltaY) > this.touchSensitivity) {
+                                        if (deltaY > 0) {
+                                            this.adjustSpeed(0.5);
+                                            this.showStatus('Velocidade aumentada', 'info');
+                                        } else {
+                                            if (this.speed > 0.5) {
+                                                this.adjustSpeed(-0.5);
+                                                this.showStatus('Velocidade diminuída', 'info');
+                                            } else {
+                                                this.pause();
+                                                this.showStatus('Pausado', 'info');
+                                            }
+                                        }
+                                    }
+                                }
+
+                                togglePlayPause() {
+                                    if (this.isRunning) {
+                                        this.pause();
+                                    } else {
+                                        this.play();
+                                    }
+                                }
+
+                                play() {
+                                    this.isRunning = true;
+                                    this.showStatus('Reproduzindo', 'success');
+                                    this.animate();
+                                }
+
+                                pause() {
+                                    this.isRunning = false;
+                                    this.showStatus('Pausado', 'info');
+                                    if (this.animationId) {
+                                        cancelAnimationFrame(this.animationId);
+                                    }
+                                }
+
+                                animate() {
+                                    if (!this.isRunning) return;
+
+                                    this.currentPosition += this.speed;
+                                    this.elements.textContentDiv.style.transform = \`translateY(\${window.innerHeight - (this.currentPosition / 10)}px)\`;
+                                    
+                                    const maxScrollPosition = this.elements.textContentDiv.scrollHeight - (window.innerHeight * 0.1);
+                                    if (this.currentPosition / 10 >= maxScrollPosition) {
+                                        this.pause();
+                                        this.showStatus('Fim do texto alcançado', 'info');
+                                        return;
+                                    }
+
+                                    this.animationId = requestAnimationFrame(() => this.animate());
+                                }
+
+                                adjustSpeed(delta) {
+                                    this.speed = Math.max(0.5, Math.min(5, this.speed + delta));
+                                    this.showStatus(\`Velocidade: \${this.speed.toFixed(1)}\`, 'info');
+                                }
+
+                                adjustPosition(delta) {
+                                    const contentHeight = this.elements.textContentDiv.scrollHeight;
+                                    const windowHeight = window.innerHeight;
+                                    const maxPositionPx = contentHeight + (windowHeight * 0.1);
+
+                                    let newPosition = this.currentPosition + delta;
+                                    this.currentPosition = Math.max(0, Math.min(maxPositionPx * 10, newPosition));
+                                    this.elements.textContentDiv.style.transform = \`translateY(\${window.innerHeight - (this.currentPosition / 10)}px)\`;
+                                    this.showStatus('Ajustando posição', 'info');
+                                }
+
+                                resetPosition() {
+                                    this.currentPosition = 0;
+                                    this.elements.textContentDiv.style.transform = \`translateY(\${window.innerHeight}px)\`;
+                                    this.showStatus('Posição reiniciada', 'info');
+                                }
+
+                                showStatus(message, type = 'info') {
+                                    const statusElement = this.elements.status;
+                                    statusElement.textContent = message;
+                                    statusElement.className = \`status show \${type}\`;
+                                    
+                                    setTimeout(() => {
+                                        statusElement.classList.remove('show');
+                                    }, 3000);
+                                }
+                            }
+
+                            // Inicializa o controlador secundário na nova janela
+                            // A janela pai passará os valores iniciais
+                            let secondaryTeleprompterInstance;
+                            window.onload = () => {
+                                secondaryTeleprompterInstance = new SecondaryTeleprompterController(
+                                    window.opener.teleprompter.textContent,
+                                    window.opener.teleprompter.speed,
+                                    window.opener.teleprompter.fontSize
+                                );
+                                window.teleprompterInstance = secondaryTeleprompterInstance; // Torna acessível à janela pai
+                            };
+                        <\/script>
                     </body>
                     </html>
                 `;
 
-                this.newWindow = window.open('', '_blank', 'width=1920,height=1080,fullscreen=yes');
-                this.newWindow.document.write(newWindowHtml);
-                this.newWindow.document.close();
-                
-                this.showStatus('Nova janela aberta para ecrã secundário', 'success');
+                // Abre a nova janela e escreve o HTML
+                // O "fullscreen=yes" é uma tentativa, mas pode ser limitado pelo browser
+                this.newWindow = window.open('', '_blank', 'width=1920,height=1080'); // Não use fullscreen diretamente aqui, pode ser bloqueado
+                if (this.newWindow) {
+                    this.newWindow.document.write(newWindowHtml);
+                    this.newWindow.document.close();
+                    // Tenta colocar em fullscreen após a abertura, pode precisar de interação do usuário
+                    // Esta chamada deve ser feita a partir de um evento de clique ou toque iniciado pelo usuário para funcionar
+                    // this.newWindow.document.body.requestFullscreen().catch(e => console.log("Fullscreen denied or not supported:", e));
+                    
+                    this.showStatus('Nova janela aberta para ecrã secundário. Arraste para o monitor externo.', 'success');
+                    // Sincroniza a posição inicial na nova janela
+                    if (this.newWindow.teleprompterInstance) {
+                        this.newWindow.teleprompterInstance.currentPosition = this.currentPosition;
+                        this.newWindow.teleprompterInstance.elements.textContentDiv.style.transform = `translateY(${this.newWindow.innerHeight - (this.newWindow.teleprompterInstance.currentPosition / 10)}px)`;
+                    }
+                } else {
+                    this.showStatus('Não foi possível abrir a nova janela. Verifique as permissões de pop-up.', 'error');
+                }
             }
 
             showStatus(message, type = 'info') {
-                this.elements.status.textContent = message;
-                this.elements.status.className = `status show ${type}`;
+                const statusElement = this.elements.status;
+                statusElement.textContent = message;
+                statusElement.className = `status show ${type}`;
                 
                 setTimeout(() => {
-                    this.elements.status.classList.remove('show');
+                    statusElement.classList.remove('show');
                 }, 3000);
             }
         }
