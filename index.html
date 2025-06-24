@@ -442,16 +442,14 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                 this.elements.speedSlider.addEventListener('input', (e) => {
                     this.speed = parseFloat(e.target.value);
                     this.elements.speedValue.textContent = this.speed.toFixed(1);
-                    // Se estiver a rolar na nova janela, atualiza lá também
-                    if (this.newWindow && !this.newWindow.closed && this.newWindow.teleprompterInstance) {
-                        this.newWindow.teleprompterInstance.speed = this.speed;
-                    }
+                    this.syncNewWindow(); // Sincroniza a nova janela
                 });
 
                 this.elements.fontSizeSlider.addEventListener('input', (e) => {
                     this.fontSize = parseInt(e.target.value);
                     this.elements.fontSizeValue.textContent = this.fontSize;
                     this.updateFontSize();
+                    this.syncNewWindow(); // Sincroniza a nova janela
                 });
 
                 // Keyboard controls
@@ -469,18 +467,7 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                 // Text input changes
                 this.elements.textInput.addEventListener('input', () => {
                     this.textContent = this.elements.textInput.value;
-                    // Se a nova janela estiver aberta, atualiza o texto lá também
-                    if (this.newWindow && !this.newWindow.closed) {
-                        const newWindowTextContent = this.newWindow.document.getElementById('textContent');
-                        if (newWindowTextContent) {
-                            newWindowTextContent.textContent = this.textContent;
-                            // Reset position in new window if text changes significantly
-                            if (this.newWindow.teleprompterInstance) {
-                                this.newWindow.teleprompterInstance.textContent = this.textContent;
-                                this.newWindow.teleprompterInstance.resetPosition();
-                            }
-                        }
-                    }
+                    this.syncNewWindow(); // Sincroniza a nova janela
                 });
 
                 // Window close detection for the new window
@@ -516,23 +503,19 @@ Boa apresentação!`;
 
             loadFile(event) {
                 const file = event.target.files[0];
+                console.log("Tentando carregar ficheiro:", file); // Debugging
                 if (file && file.type === 'text/plain') {
                     const reader = new FileReader();
                     reader.onload = (e) => {
+                        console.log("Ficheiro lido com sucesso."); // Debugging
                         this.textContent = e.target.result;
                         this.elements.textInput.value = this.textContent;
                         this.showStatus('Ficheiro carregado com sucesso!', 'success');
-                        // Se a nova janela estiver aberta, atualiza o texto lá
-                        if (this.newWindow && !this.newWindow.closed) {
-                            const newWindowTextContent = this.newWindow.document.getElementById('textContent');
-                            if (newWindowTextContent) {
-                                newWindowTextContent.textContent = this.textContent;
-                                if (this.newWindow.teleprompterInstance) {
-                                    this.newWindow.teleprompterInstance.textContent = this.textContent;
-                                    this.newWindow.teleprompterInstance.resetPosition();
-                                }
-                            }
-                        }
+                        this.syncNewWindow(); // Sincroniza a nova janela
+                    };
+                    reader.onerror = (e) => {
+                        console.error("Erro ao ler ficheiro:", e); // Debugging
+                        this.showStatus('Erro ao ler o ficheiro.', 'error');
                     };
                     reader.readAsText(file);
                 } else {
@@ -553,22 +536,27 @@ Boa apresentação!`;
                     case 'Space':
                         event.preventDefault();
                         targetTeleprompter.togglePlayPause();
+                        this.syncNewWindow(); // Sincroniza a nova janela
                         break;
                     case 'ArrowUp':
                         event.preventDefault();
                         targetTeleprompter.adjustSpeed(0.2);
+                        this.syncNewWindow(); // Sincroniza a nova janela
                         break;
                     case 'ArrowDown':
                         event.preventDefault();
                         targetTeleprompter.adjustSpeed(-0.2);
+                        this.syncNewWindow(); // Sincroniza a nova janela
                         break;
                     case 'ArrowLeft':
                         event.preventDefault();
                         targetTeleprompter.adjustPosition(-100);
+                        this.syncNewWindow(); // Sincroniza a nova janela
                         break;
                     case 'ArrowRight':
                         event.preventDefault();
                         targetTeleprompter.adjustPosition(100);
+                        this.syncNewWindow(); // Sincroniza a nova janela
                         break;
                     case 'Escape':
                         event.preventDefault();
@@ -584,6 +572,7 @@ Boa apresentação!`;
                     case 'KeyR':
                         event.preventDefault();
                         targetTeleprompter.resetPosition();
+                        this.syncNewWindow(); // Sincroniza a nova janela
                         break;
                 }
             }
@@ -601,6 +590,7 @@ Boa apresentação!`;
                         this.isLongPress = true;
                         this.resetPosition();
                         this.showStatus('Posição reiniciada', 'info');
+                        this.syncNewWindow(); // Sincroniza a nova janela
                     }
                 }, this.longPressThreshold);
             }
@@ -618,20 +608,24 @@ Boa apresentação!`;
                 if (Math.abs(deltaY) < 30 && deltaTime < 300) {
                     // Tap
                     this.togglePlayPause();
+                    this.syncNewWindow(); // Sincroniza a nova janela
                 } else if (Math.abs(deltaY) > this.touchSensitivity) {
                     // Swipe
                     if (deltaY > 0) {
                         // Swipe up - speed up
                         this.adjustSpeed(0.5);
                         this.showStatus('Velocidade aumentada', 'info');
+                        this.syncNewWindow(); // Sincroniza a nova janela
                     } else {
                         // Swipe down - slow down or stop
                         if (this.speed > 0.5) {
                             this.adjustSpeed(-0.5);
                             this.showStatus('Velocidade diminuída', 'info');
+                            this.syncNewWindow(); // Sincroniza a nova janela
                         } else {
                             this.pause();
                             this.showStatus('Pausado', 'info');
+                            this.syncNewWindow(); // Sincroniza a nova janela
                         }
                     }
                 }
@@ -643,6 +637,7 @@ Boa apresentação!`;
                 } else {
                     this.play();
                 }
+                this.syncNewWindow(); // Sincroniza a nova janela
             }
 
             play() {
@@ -654,6 +649,7 @@ Boa apresentação!`;
                 this.isRunning = true;
                 this.showStatus('Reproduzindo', 'success');
                 this.animate();
+                this.syncNewWindow(); // Sincroniza a nova janela
             }
 
             pause() {
@@ -662,6 +658,7 @@ Boa apresentação!`;
                 if (this.animationId) {
                     cancelAnimationFrame(this.animationId);
                 }
+                this.syncNewWindow(); // Sincroniza a nova janela
             }
 
             animate() {
@@ -692,10 +689,7 @@ Boa apresentação!`;
                 this.elements.speedSlider.value = this.speed;
                 this.elements.speedValue.textContent = this.speed.toFixed(1);
                 this.showStatus(`Velocidade: ${this.speed.toFixed(1)}`, 'info');
-                // Sincronizar velocidade com a nova janela, se aberta
-                if (this.newWindow && !this.newWindow.closed && this.newWindow.teleprompterInstance) {
-                    this.newWindow.teleprompterInstance.speed = this.speed;
-                }
+                this.syncNewWindow(); // Sincroniza a nova janela
             }
 
             adjustPosition(delta) {
@@ -710,39 +704,27 @@ Boa apresentação!`;
                 this.currentPosition = Math.max(0, Math.min(maxPositionPx * 10, newPosition)); // * 10 para converter em "unidades" da velocidade
                 this.elements.textContentDiv.style.transform = `translateY(${window.innerHeight - (this.currentPosition / 10)}px)`;
                 this.showStatus('Ajustando posição', 'info');
-
-                 // Sincronizar posição com a nova janela, se aberta
-                if (this.newWindow && !this.newWindow.closed && this.newWindow.teleprompterInstance) {
-                    this.newWindow.teleprompterInstance.currentPosition = this.currentPosition;
-                    this.newWindow.teleprompterInstance.elements.textContentDiv.style.transform = `translateY(${this.newWindow.innerHeight - (this.newWindow.teleprompterInstance.currentPosition / 10)}px)`;
-                }
+                this.syncNewWindow(); // Sincroniza a nova janela
             }
             
             resetPosition() {
                 this.currentPosition = 0;
                 this.elements.textContentDiv.style.transform = `translateY(${window.innerHeight}px)`;
                 this.showStatus('Posição reiniciada', 'info');
-                // Sincronizar posição com a nova janela, se aberta
-                if (this.newWindow && !this.newWindow.closed && this.newWindow.teleprompterInstance) {
-                    this.newWindow.teleprompterInstance.currentPosition = 0;
-                    this.newWindow.teleprompterInstance.elements.textContentDiv.style.transform = `translateY(${this.newWindow.innerHeight}px)`;
-                }
+                this.syncNewWindow(); // Sincroniza a nova janela
             }
 
             updateFontSize() {
                 this.elements.textContentDiv.style.fontSize = `${this.fontSize}px`;
-                if (this.newWindow && !this.newWindow.closed) {
-                    const newWindowTextContent = this.newWindow.document.getElementById('textContent');
-                    if (newWindowTextContent) {
-                        newWindowTextContent.style.fontSize = `${this.fontSize}px`;
-                    }
-                }
+                this.syncNewWindow(); // Sincroniza a nova janela
             }
 
             startTeleprompter() {
+                console.log("startTeleprompter chamado."); // Debugging
                 this.textContent = this.elements.textInput.value;
                 if (!this.textContent.trim()) {
                     this.showStatus('Adicione texto antes de iniciar!', 'error');
+                    console.log("Erro: Texto vazio."); // Debugging
                     return;
                 }
 
@@ -754,6 +736,7 @@ Boa apresentação!`;
                 this.elements.teleprompterDisplay.classList.add('active');
                 
                 this.showStatus('Teleprompter iniciado - Pressione ESPAÇO ou toque para começar', 'success');
+                this.syncNewWindow(); // Sincroniza a nova janela
             }
 
             exitTeleprompter() {
@@ -761,6 +744,7 @@ Boa apresentação!`;
                 this.elements.controlPanel.classList.remove('hidden');
                 this.elements.teleprompterDisplay.classList.remove('active');
                 this.showStatus('Teleprompter fechado', 'info');
+                this.syncNewWindow(); // Sincroniza a nova janela
             }
 
             resetTeleprompter() {
@@ -770,6 +754,7 @@ Boa apresentação!`;
                 this.elements.speedSlider.value = 2;
                 this.elements.speedValue.textContent = '2.0';
                 this.showStatus('Teleprompter reiniciado', 'info');
+                this.syncNewWindow(); // Sincroniza a nova janela
             }
 
             openNewWindow() {
@@ -784,10 +769,9 @@ Boa apresentação!`;
                     this.newWindow = null;
                 }
 
-                // Codifica o texto para ser seguro em URLs e HTML
-                const encodedText = encodeURIComponent(this.textContent);
-                
-                const newWindowHtml = `
+                // Cria o HTML para a nova janela, sem conteúdo inicialmente
+                // O conteúdo será enviado via postMessage
+                const newWindowHtmlTemplate = `
                     <!DOCTYPE html>
                     <html lang="pt">
                     <head>
@@ -799,41 +783,25 @@ Boa apresentação!`;
                             body { background: #000; color: white; overflow: hidden; }
                             .text-content { 
                                 padding: 50px; 
-                                font-size: ${this.fontSize}px; 
                                 line-height: 1.6; 
                                 white-space: pre-wrap; 
-                                transform: translateY(${window.innerHeight}px); /* Inicia fora do ecrã da nova janela */
                                 transition: transform 0.1s linear; 
                                 text-align: center; 
                                 width: 100%;
                                 box-sizing: border-box;
                             }
-                            /* Adicionar estilos para status na nova janela, se necessário */
                             .status {
-                                position: fixed;
-                                top: 20px;
-                                right: 20px;
-                                background: rgba(0, 0, 0, 0.8);
-                                color: white;
-                                padding: 10px 20px;
-                                border-radius: 20px;
-                                font-weight: bold;
-                                z-index: 1001;
-                                display: none;
-                                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-                                opacity: 0;
-                                transition: opacity 0.3s ease-in-out;
+                                position: fixed; top: 20px; right: 20px; background: rgba(0, 0, 0, 0.8);
+                                color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold;
+                                z-index: 1001; display: none; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+                                opacity: 0; transition: opacity 0.3s ease-in-out;
                             }
                             .status.show { display: block; opacity: 1; }
                             .status.error { background-color: #e74c3c; }
                             .status.success { background-color: #27ae60; }
                             .status.info { background-color: #3498db; }
-
                             @media (max-width: 768px) {
-                                .text-content {
-                                    padding: 30px;
-                                    font-size: 32px;
-                                }
+                                .text-content { padding: 30px; font-size: 32px; }
                             }
                         </style>
                     </head>
@@ -843,24 +811,19 @@ Boa apresentação!`;
                         <script>
                             // Script para a nova janela (mini-controlador)
                             class SecondaryTeleprompterController {
-                                constructor(initialText, initialSpeed, initialFontSize) {
+                                constructor() {
                                     this.isRunning = false;
-                                    this.speed = initialSpeed;
-                                    this.fontSize = initialFontSize;
+                                    this.speed = 2; // Default, will be updated by postMessage
+                                    this.fontSize = 48; // Default, will be updated by postMessage
                                     this.currentPosition = 0;
                                     this.animationId = null;
-                                    this.textContent = decodeURIComponent(initialText); // Decodifica o texto recebido
+                                    this.textContent = '';
 
                                     this.elements = {
                                         textContentDiv: document.getElementById('textContent'),
                                         status: document.getElementById('status')
                                     };
 
-                                    this.elements.textContentDiv.textContent = this.textContent;
-                                    this.elements.textContentDiv.style.fontSize = `${this.fontSize}px`;
-                                    this.elements.textContentDiv.style.transform = \`translateY(\${window.innerHeight}px)\`;
-
-                                    // Touch handling for the secondary window
                                     this.startY = 0;
                                     this.startTime = 0;
                                     this.isLongPress = false;
@@ -876,10 +839,18 @@ Boa apresentação!`;
                                     this.elements.textContentDiv.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
                                     this.elements.textContentDiv.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
                                     this.elements.textContentDiv.addEventListener('click', () => this.togglePlayPause());
+
+                                    // Listen for messages from the parent window
+                                    window.addEventListener('message', (event) => {
+                                        // A segurança do event.origin deve ser implementada em produção
+                                        // if (event.origin !== 'https://your-github-username.github.io') return; 
+                                        if (event.data.type === 'teleprompterUpdate') {
+                                            this.updateContent(event.data.payload);
+                                        }
+                                    });
                                 }
 
                                 handleKeyboard(event) {
-                                    // Controlos de teclado na nova janela
                                     switch(event.code) {
                                         case 'Space':
                                             event.preventDefault();
@@ -982,7 +953,7 @@ Boa apresentação!`;
                                     if (!this.isRunning) return;
 
                                     this.currentPosition += this.speed;
-                                    this.elements.textContentDiv.style.transform = \`translateY(\${window.innerHeight - (this.currentPosition / 10)}px)\`;
+                                    this.elements.textContentDiv.style.transform = `translateY(${window.innerHeight - (this.currentPosition / 10)}px)`;
                                     
                                     const maxScrollPosition = this.elements.textContentDiv.scrollHeight - (window.innerHeight * 0.1);
                                     if (this.currentPosition / 10 >= maxScrollPosition) {
@@ -996,7 +967,7 @@ Boa apresentação!`;
 
                                 adjustSpeed(delta) {
                                     this.speed = Math.max(0.5, Math.min(5, this.speed + delta));
-                                    this.showStatus(\`Velocidade: \${this.speed.toFixed(1)}\`, 'info');
+                                    this.showStatus(`Velocidade: ${this.speed.toFixed(1)}`, 'info');
                                 }
 
                                 adjustPosition(delta) {
@@ -1006,78 +977,116 @@ Boa apresentação!`;
 
                                     let newPosition = this.currentPosition + delta;
                                     this.currentPosition = Math.max(0, Math.min(maxPositionPx * 10, newPosition));
-                                    this.elements.textContentDiv.style.transform = \`translateY(\${window.innerHeight - (this.currentPosition / 10)}px)\`;
+                                    this.elements.textContentDiv.style.transform = `translateY(${window.innerHeight - (this.currentPosition / 10)}px)`;
                                     this.showStatus('Ajustando posição', 'info');
                                 }
 
                                 resetPosition() {
                                     this.currentPosition = 0;
-                                    this.elements.textContentDiv.style.transform = \`translateY(\${window.innerHeight}px)\`;
+                                    this.elements.textContentDiv.style.transform = `translateY(${window.innerHeight}px)`;
                                     this.showStatus('Posição reiniciada', 'info');
+                                }
+
+                                updateContent(data) {
+                                    // Esta função é chamada quando a janela principal envia uma mensagem
+                                    console.log("Recebida atualização na janela secundária:", data); // Debugging
+                                    if (data.textContent !== undefined && this.textContent !== data.textContent) {
+                                        this.textContent = data.textContent;
+                                        this.elements.textContentDiv.textContent = this.textContent;
+                                        this.resetPosition(); // Reinicia a posição quando o conteúdo muda
+                                        this.pause(); // Pausa ao carregar novo conteúdo
+                                    }
+                                    if (data.speed !== undefined) {
+                                        this.speed = data.speed;
+                                    }
+                                    if (data.fontSize !== undefined) {
+                                        this.fontSize = data.fontSize;
+                                        this.elements.textContentDiv.style.fontSize = `${this.fontSize}px`;
+                                    }
+                                    if (data.currentPosition !== undefined) {
+                                        this.currentPosition = data.currentPosition;
+                                        this.elements.textContentDiv.style.transform = `translateY(${window.innerHeight - (this.currentPosition / 10)}px)`;
+                                    }
+                                    if (data.isPlaying !== undefined) {
+                                        if (data.isPlaying && !this.isRunning) {
+                                            this.play();
+                                        } else if (!data.isPlaying && this.isRunning) {
+                                            this.pause();
+                                        }
+                                    }
                                 }
 
                                 showStatus(message, type = 'info') {
                                     const statusElement = this.elements.status;
                                     statusElement.textContent = message;
-                                    statusElement.className = \`status show \${type}\`;
-                                    
+                                    statusElement.className = `status show ${type}`;
                                     setTimeout(() => {
                                         statusElement.classList.remove('show');
                                     }, 3000);
                                 }
                             }
 
-                            // Inicializa o controlador secundário na nova janela
-                            // Os dados iniciais são passados via parâmetros da URL
+                            let secondaryTeleprompterInstance;
                             window.onload = () => {
-                                const urlParams = new URLSearchParams(window.location.search);
-                                const text = urlParams.get('text');
-                                const speed = parseFloat(urlParams.get('speed'));
-                                const fontSize = parseInt(urlParams.get('fontSize'));
-
-                                if (text && !isNaN(speed) && !isNaN(fontSize)) {
-                                    const secondaryTeleprompterInstance = new SecondaryTeleprompterController(text, speed, fontSize);
-                                    window.teleprompterInstance = secondaryTeleprompterInstance; // Torna acessível à janela pai
-                                } else {
-                                     // Fallback ou mensagem de erro se os parâmetros estiverem faltando
-                                     document.getElementById('textContent').textContent = 'Erro ao carregar o teleprompter secundário: dados ausentes.';
-                                     const statusDiv = document.getElementById('status');
-                                     if(statusDiv) {
-                                         statusDiv.textContent = 'Erro de carregamento!';
-                                         statusDiv.className = 'status show error';
-                                     }
-                                }
+                                console.log("Janela secundária carregada. Inicializando controlador..."); // Debugging
+                                secondaryTeleprompterInstance = new SecondaryTeleprompterController();
+                                window.teleprompterInstance = secondaryTeleprompterInstance; // Torna acessível à janela pai
                             };
                         <\/script>
                     </body>
                     </html>
                 `;
                 
-                // Abre a nova janela com os parâmetros na URL
-                const url = `data:text/html;charset=utf-8,${encodeURIComponent(newWindowHtml)}`;
+                // Abre a nova janela com o HTML template
+                const url = `data:text/html;charset=utf-8,${encodeURIComponent(newWindowHtmlTemplate)}`;
                 try {
                     // Adicionando 'noopener' e 'noreferrer' para segurança
                     this.newWindow = window.open(url, '_blank', `width=1920,height=1080,noopener,noreferrer`); 
 
                     if (this.newWindow) {
-                        // Sincroniza a posição inicial na nova janela
-                        // É essencial que a instância do teleprompter da nova janela esteja pronta
-                        this.newWindow.onload = () => { // Espera a nova janela carregar
-                            if (this.newWindow.teleprompterInstance) {
-                                this.newWindow.teleprompterInstance.currentPosition = this.currentPosition;
-                                this.newWindow.teleprompterInstance.elements.textContentDiv.style.transform = `translateY(${this.newWindow.innerHeight - (this.newWindow.teleprompterInstance.currentPosition / 10)}px)`;
-                            }
+                        this.showStatus('Nova janela aberta. Aguardando carregamento para sincronizar...', 'info');
+                        // Espera a nova janela carregar antes de enviar a mensagem inicial
+                        this.newWindow.onload = () => {
+                            console.log("Nova janela secundária totalmente carregada. Enviando conteúdo inicial."); // Debugging
+                            this.syncNewWindow(); // Envia o conteúdo inicial e estado
+                            this.showStatus('Nova janela pronta para ecrã secundário. Arraste para o monitor externo.', 'success');
                         };
-                        this.showStatus('Nova janela aberta para ecrã secundário. Arraste para o monitor externo.', 'success');
+
                     } else {
                         // Caso o pop-up seja bloqueado antes mesmo do try-catch pegar
+                        console.warn("window.open retornou null. Pop-up provavelmente bloqueado."); // Debugging
                         this.showStatus('Não foi possível abrir a nova janela. Verifique as permissões de pop-up.', 'error');
                     }
                 } catch (e) {
                     // Captura erros de segurança ou outros que impeçam a abertura
-                    console.error("Erro ao abrir nova janela:", e);
+                    console.error("Erro ao abrir nova janela:", e); // Debugging
                     this.showStatus('Erro ao abrir nova janela. Verifique as permissões de pop-up ou a consola para detalhes.', 'error');
                 }
+            }
+
+            // Função para enviar dados para a nova janela
+            syncNewWindow() {
+                // Adiciona um pequeno delay para garantir que a janela e o seu JS estejam prontos
+                // especialmente após a abertura inicial.
+                setTimeout(() => {
+                    if (this.newWindow && !this.newWindow.closed && this.newWindow.teleprompterInstance) {
+                        console.log("Sincronizando com a nova janela..."); // Debugging
+                        this.newWindow.postMessage({
+                            type: 'teleprompterUpdate',
+                            payload: {
+                                textContent: this.textContent,
+                                speed: this.speed,
+                                fontSize: this.fontSize,
+                                currentPosition: this.currentPosition,
+                                isPlaying: this.isRunning
+                            }
+                        }, '*'); // Em produção, substitua '*' pela origem do seu GitHub Pages (ex: 'https://seu-usuario.github.io')
+                    } else if (this.newWindow && !this.newWindow.closed) {
+                        console.log("Nova janela existe, mas teleprompterInstance ainda não está disponível."); // Debugging
+                        // Tenta sincronizar novamente em breve se a instância ainda não estiver pronta
+                        setTimeout(() => this.syncNewWindow(), 200); 
+                    }
+                }, 50); // Pequeno delay inicial para dar tempo à nova janela para iniciar
             }
 
             showStatus(message, type = 'info') {
