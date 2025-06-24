@@ -1,1 +1,725 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teleprompter Profissional</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            overflow: hidden;
+        }
+
+        .control-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .control-panel.hidden {
+            display: none;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .control-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .control-section h3 {
+            margin-bottom: 15px;
+            color: #4ecdc4;
+            font-size: 1.3em;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #4ecdc4;
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .file-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .control-button {
+            padding: 15px 30px;
+            margin: 5px;
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .control-button.danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+
+        .control-button.success {
+            background: linear-gradient(45deg, #51cf66, #40c057);
+        }
+
+        .slider-container {
+            margin: 15px 0;
+        }
+
+        .slider-container label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4ecdc4;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.6);
+        }
+
+        .teleprompter-display {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #000;
+            color: white;
+            display: none;
+            overflow: hidden;
+            touch-action: pan-y;
+        }
+
+        .teleprompter-display.active {
+            display: block;
+        }
+
+        .text-content {
+            padding: 50px;
+            font-size: 48px;
+            line-height: 1.6;
+            font-family: 'Arial', sans-serif;
+            white-space: pre-wrap;
+            transform: translateY(100vh);
+            transition: transform 0.1s linear;
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid #4ecdc4;
+        }
+
+        .instructions h4 {
+            color: #4ecdc4;
+            margin-bottom: 10px;
+        }
+
+        .instructions ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .instructions li {
+            margin: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .instructions li:before {
+            content: "▶";
+            position: absolute;
+            left: 0;
+            color: #4ecdc4;
+        }
+
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            z-index: 1001;
+            display: none;
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .control-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .text-content {
+                padding: 30px;
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status" id="status"></div>
+
+    <div class="control-panel" id="controlPanel">
+        <div class="header">
+            <h1>📺 Teleprompter Pro</h1>
+            <p>Sistema profissional de teleprompter com controlo avançado</p>
+        </div>
+
+        <div class="control-grid">
+            <div class="control-section">
+                <h3>📝 Texto do Teleprompter</h3>
+                <textarea id="textInput" placeholder="Escreva ou cole aqui o seu texto para o teleprompter...
+
+Pode usar quebras de linha normais.
+O texto rolará suavemente durante a apresentação.
+
+Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."></textarea>
+                
+                <div class="file-input-wrapper">
+                    <input type="file" id="fileInput" class="file-input" accept=".txt">
+                    <label for="fileInput" class="file-label">📁 Carregar Ficheiro TXT</label>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>⚙️ Controlos</h3>
+                
+                <div class="slider-container">
+                    <label for="speedSlider">Velocidade: <span id="speedValue">2</span></label>
+                    <input type="range" id="speedSlider" class="slider" min="0.5" max="5" value="2" step="0.1">
+                </div>
+
+                <div class="slider-container">
+                    <label for="fontSizeSlider">Tamanho da Fonte: <span id="fontSizeValue">48</span>px</label>
+                    <input type="range" id="fontSizeSlider" class="slider" min="24" max="80" value="48" step="2">
+                </div>
+
+                <button class="control-button success" onclick="startTeleprompter()">🚀 Iniciar Teleprompter</button>
+                <button class="control-button" onclick="openNewWindow()">🖥️ Abrir em Nova Janela</button>
+                <button class="control-button danger" onclick="resetTeleprompter()">🔄 Reset</button>
+            </div>
+
+            <div class="control-section">
+                <h3>🎮 Controlos do Teclado</h3>
+                <div class="instructions">
+                    <h4>Durante a apresentação:</h4>
+                    <ul>
+                        <li><strong>ESPAÇO</strong> - Play/Pause</li>
+                        <li><strong>↑</strong> - Acelerar</li>
+                        <li><strong>↓</strong> - Desacelerar</li>
+                        <li><strong>←</strong> - Recuar</li>
+                        <li><strong>→</strong> - Avançar</li>
+                        <li><strong>ESC</strong> - Sair do teleprompter</li>
+                        <li><strong>R</strong> - Reiniciar do início</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>📱 Controlos Touch</h3>
+                <div class="instructions">
+                    <h4>Gestos disponíveis:</h4>
+                    <ul>
+                        <li><strong>Swipe Up</strong> - Acelerar rolagem</li>
+                        <li><strong>Swipe Down</strong> - Desacelerar/Parar</li>
+                        <li><strong>Tap</strong> - Play/Pause</li>
+                        <li><strong>Long Press</strong> - Reset posição</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="teleprompter-display" id="teleprompterDisplay">
+        <div class="text-content" id="textContent"></div>
+    </div>
+
+    <script>
+        class TeleprompterController {
+            constructor() {
+                this.isRunning = false;
+                this.speed = 2;
+                this.fontSize = 48;
+                this.currentPosition = 0;
+                this.animationId = null;
+                this.textContent = '';
+                this.newWindow = null;
+                
+                // Touch handling
+                this.startY = 0;
+                this.startTime = 0;
+                this.isLongPress = false;
+                
+                this.initializeElements();
+                this.setupEventListeners();
+                this.loadSampleText();
+            }
+
+            initializeElements() {
+                this.elements = {
+                    controlPanel: document.getElementById('controlPanel'),
+                    teleprompterDisplay: document.getElementById('teleprompterDisplay'),
+                    textInput: document.getElementById('textInput'),
+                    textContentDiv: document.getElementById('textContent'),
+                    fileInput: document.getElementById('fileInput'),
+                    speedSlider: document.getElementById('speedSlider'),
+                    fontSizeSlider: document.getElementById('fontSizeSlider'),
+                    speedValue: document.getElementById('speedValue'),
+                    fontSizeValue: document.getElementById('fontSizeValue'),
+                    status: document.getElementById('status')
+                };
+            }
+
+            setupEventListeners() {
+                // File input
+                this.elements.fileInput.addEventListener('change', (e) => this.loadFile(e));
+                
+                // Sliders
+                this.elements.speedSlider.addEventListener('input', (e) => {
+                    this.speed = parseFloat(e.target.value);
+                    this.elements.speedValue.textContent = this.speed.toFixed(1);
+                });
+
+                this.elements.fontSizeSlider.addEventListener('input', (e) => {
+                    this.fontSize = parseInt(e.target.value);
+                    this.elements.fontSizeValue.textContent = this.fontSize;
+                    this.updateFontSize();
+                });
+
+                // Keyboard controls
+                document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+
+                // Touch controls
+                this.elements.teleprompterDisplay.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
+                this.elements.teleprompterDisplay.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
+                this.elements.teleprompterDisplay.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
+                // Click controls
+                this.elements.teleprompterDisplay.addEventListener('click', () => this.togglePlayPause());
+
+                // Text input changes
+                this.elements.textInput.addEventListener('input', () => {
+                    this.textContent = this.elements.textInput.value;
+                });
+
+                // Window close detection
+                window.addEventListener('beforeunload', () => {
+                    if (this.newWindow && !this.newWindow.closed) {
+                        this.newWindow.close();
+                    }
+                });
+            }
+
+            loadSampleText() {
+                const sampleText = `Bem-vindos ao Teleprompter Profissional!
+
+Este é um sistema avançado de teleprompter que permite controlo total através do teclado e gestos touch.
+
+Pode carregar o seu próprio texto ou ficheiro TXT, ajustar a velocidade de rolagem em tempo real, e controlar tudo com teclas simples.
+
+Funcionalidades principais:
+- Rolagem suave e controlável
+- Ajuste de velocidade em tempo real
+- Controlos por teclado e touch
+- Suporte para ficheiros TXT
+- Interface responsiva
+- Modo de ecrã completo
+
+Para começar, substitua este texto pelo seu conteúdo e clique em "Iniciar Teleprompter".
+
+Boa apresentação!`;
+
+                this.elements.textInput.value = sampleText;
+                this.textContent = sampleText;
+            }
+
+            loadFile(event) {
+                const file = event.target.files[0];
+                if (file && file.type === 'text/plain') {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.textContent = e.target.result;
+                        this.elements.textInput.value = this.textContent;
+                        this.showStatus('Ficheiro carregado com sucesso!', 'success');
+                    };
+                    reader.readAsText(file);
+                } else {
+                    this.showStatus('Por favor, selecione um ficheiro TXT válido.', 'error');
+                }
+            }
+
+            handleKeyboard(event) {
+                if (!this.elements.teleprompterDisplay.classList.contains('active')) return;
+
+                switch(event.code) {
+                    case 'Space':
+                        event.preventDefault();
+                        this.togglePlayPause();
+                        break;
+                    case 'ArrowUp':
+                        event.preventDefault();
+                        this.adjustSpeed(0.2);
+                        break;
+                    case 'ArrowDown':
+                        event.preventDefault();
+                        this.adjustSpeed(-0.2);
+                        break;
+                    case 'ArrowLeft':
+                        event.preventDefault();
+                        this.adjustPosition(-100);
+                        break;
+                    case 'ArrowRight':
+                        event.preventDefault();
+                        this.adjustPosition(100);
+                        break;
+                    case 'Escape':
+                        event.preventDefault();
+                        this.exitTeleprompter();
+                        break;
+                    case 'KeyR':
+                        event.preventDefault();
+                        this.resetPosition();
+                        break;
+                }
+            }
+
+            handleTouchStart(event) {
+                event.preventDefault();
+                const touch = event.touches[0];
+                this.startY = touch.clientY;
+                this.startTime = Date.now();
+                this.isLongPress = false;
+
+                // Long press detection
+                setTimeout(() => {
+                    if (Date.now() - this.startTime >= 500) {
+                        this.isLongPress = true;
+                        this.resetPosition();
+                        this.showStatus('Posição reiniciada', 'info');
+                    }
+                }, 500);
+            }
+
+            handleTouchEnd(event) {
+                event.preventDefault();
+                if (this.isLongPress) return;
+
+                const touch = event.changedTouches[0];
+                const endY = touch.clientY;
+                const deltaY = this.startY - endY;
+                const deltaTime = Date.now() - this.startTime;
+
+                if (Math.abs(deltaY) < 30 && deltaTime < 300) {
+                    // Tap
+                    this.togglePlayPause();
+                } else if (Math.abs(deltaY) > 50) {
+                    // Swipe
+                    if (deltaY > 0) {
+                        // Swipe up - speed up
+                        this.adjustSpeed(0.5);
+                        this.showStatus('Velocidade aumentada', 'info');
+                    } else {
+                        // Swipe down - slow down or stop
+                        if (this.speed > 0.5) {
+                            this.adjustSpeed(-0.5);
+                            this.showStatus('Velocidade diminuída', 'info');
+                        } else {
+                            this.pause();
+                            this.showStatus('Pausado', 'info');
+                        }
+                    }
+                }
+            }
+
+            togglePlayPause() {
+                if (this.isRunning) {
+                    this.pause();
+                } else {
+                    this.play();
+                }
+            }
+
+            play() {
+                if (!this.textContent.trim()) {
+                    this.showStatus('Adicione texto antes de iniciar!', 'error');
+                    return;
+                }
+
+                this.isRunning = true;
+                this.showStatus('Reproduzindo', 'success');
+                this.animate();
+            }
+
+            pause() {
+                this.isRunning = false;
+                this.showStatus('Pausado', 'info');
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+            }
+
+            animate() {
+                if (!this.isRunning) return;
+
+                this.currentPosition += this.speed;
+                this.elements.textContentDiv.style.transform = `translateY(${100 - (this.currentPosition / 10)}vh)`;
+
+                // Check if we've reached the end
+                if (this.currentPosition >= this.getMaxPosition()) {
+                    this.pause();
+                    this.showStatus('Fim do texto alcançado', 'info');
+                    return;
+                }
+
+                this.animationId = requestAnimationFrame(() => this.animate());
+            }
+
+            adjustSpeed(delta) {
+                this.speed = Math.max(0, Math.min(5, this.speed + delta));
+                this.elements.speedSlider.value = this.speed;
+                this.elements.speedValue.textContent = this.speed.toFixed(1);
+                this.showStatus(`Velocidade: ${this.speed.toFixed(1)}`, 'info');
+            }
+
+            adjustPosition(delta) {
+                this.currentPosition = Math.max(0, Math.min(this.getMaxPosition(), this.currentPosition + delta));
+                this.elements.textContentDiv.style.transform = `translateY(${100 - (this.currentPosition / 10)}vh)`;
+            }
+
+            resetPosition() {
+                this.currentPosition = 0;
+                this.elements.textContentDiv.style.transform = 'translateY(100vh)';
+                this.showStatus('Posição reiniciada', 'info');
+            }
+
+            getMaxPosition() {
+                const contentHeight = this.elements.textContentDiv.scrollHeight;
+                const windowHeight = window.innerHeight;
+                return Math.max(0, (contentHeight + windowHeight) * 10);
+            }
+
+            updateFontSize() {
+                this.elements.textContentDiv.style.fontSize = `${this.fontSize}px`;
+                if (this.newWindow && !this.newWindow.closed) {
+                    const newWindowTextContent = this.newWindow.document.getElementById('textContent');
+                    if (newWindowTextContent) {
+                        newWindowTextContent.style.fontSize = `${this.fontSize}px`;
+                    }
+                }
+            }
+
+            startTeleprompter() {
+                this.textContent = this.elements.textInput.value;
+                if (!this.textContent.trim()) {
+                    this.showStatus('Adicione texto antes de iniciar!', 'error');
+                    return;
+                }
+
+                this.elements.textContentDiv.textContent = this.textContent;
+                this.updateFontSize();
+                this.resetPosition();
+                
+                this.elements.controlPanel.classList.add('hidden');
+                this.elements.teleprompterDisplay.classList.add('active');
+                
+                this.showStatus('Teleprompter iniciado - Pressione ESPAÇO para começar', 'success');
+            }
+
+            exitTeleprompter() {
+                this.pause();
+                this.elements.controlPanel.classList.remove('hidden');
+                this.elements.teleprompterDisplay.classList.remove('active');
+                this.showStatus('Teleprompter fechado', 'info');
+            }
+
+            resetTeleprompter() {
+                this.pause();
+                this.resetPosition();
+                this.speed = 2;
+                this.elements.speedSlider.value = 2;
+                this.elements.speedValue.textContent = '2.0';
+                this.showStatus('Teleprompter reiniciado', 'info');
+            }
+
+            openNewWindow() {
+                if (!this.textContent.trim()) {
+                    this.showStatus('Adicione texto antes de abrir nova janela!', 'error');
+                    return;
+                }
+
+                const newWindowHtml = `
+                    <!DOCTYPE html>
+                    <html lang="pt">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Teleprompter - Ecrã Secundário</title>
+                        <style>
+                            * { margin: 0; padding: 0; box-sizing: border-box; }
+                            body { background: #000; color: white; overflow: hidden; font-family: Arial, sans-serif; }
+                            .text-content { 
+                                padding: 50px; 
+                                font-size: ${this.fontSize}px; 
+                                line-height: 1.6; 
+                                white-space: pre-wrap; 
+                                transform: translateY(100vh); 
+                                transition: transform 0.1s linear; 
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="text-content" id="textContent">${this.textContent}</div>
+                    </body>
+                    </html>
+                `;
+
+                this.newWindow = window.open('', '_blank', 'width=1920,height=1080,fullscreen=yes');
+                this.newWindow.document.write(newWindowHtml);
+                this.newWindow.document.close();
+                
+                this.showStatus('Nova janela aberta para ecrã secundário', 'success');
+            }
+
+            showStatus(message, type = 'info') {
+                this.elements.status.textContent = message;
+                this.elements.status.className = `status show ${type}`;
+                
+                setTimeout(() => {
+                    this.elements.status.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // Global functions for buttons
+        let teleprompter;
+
+        function startTeleprompter() {
+            teleprompter.startTeleprompter();
+        }
+
+        function openNewWindow() {
+            teleprompter.openNewWindow();
+        }
+
+        function resetTeleprompter() {
+            teleprompter.resetTeleprompter();
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            teleprompter = new TeleprompterController();
+        });
+    </script>
+</body>
+</html>
