@@ -729,9 +729,6 @@ Boa apresentação!`;
                 }
             }
 
-            // Esta função não é mais necessária para o cálculo do maxPosition dinâmico
-            // Já que a lógica foi incorporada em animate() e adjustPosition()
-
             updateFontSize() {
                 this.elements.textContentDiv.style.fontSize = `${this.fontSize}px`;
                 if (this.newWindow && !this.newWindow.closed) {
@@ -787,6 +784,9 @@ Boa apresentação!`;
                     this.newWindow = null;
                 }
 
+                // Codifica o texto para ser seguro em URLs e HTML
+                const encodedText = encodeURIComponent(this.textContent);
+                
                 const newWindowHtml = `
                     <!DOCTYPE html>
                     <html lang="pt">
@@ -839,7 +839,7 @@ Boa apresentação!`;
                     </head>
                     <body>
                         <div class="status" id="status"></div>
-                        <div class="text-content" id="textContent">${this.textContent}</div>
+                        <div class="text-content" id="textContent"></div>
                         <script>
                             // Script para a nova janela (mini-controlador)
                             class SecondaryTeleprompterController {
@@ -849,7 +849,7 @@ Boa apresentação!`;
                                     this.fontSize = initialFontSize;
                                     this.currentPosition = 0;
                                     this.animationId = null;
-                                    this.textContent = initialText; // Recebe o texto inicial
+                                    this.textContent = decodeURIComponent(initialText); // Decodifica o texto recebido
 
                                     this.elements = {
                                         textContentDiv: document.getElementById('textContent'),
@@ -1028,39 +1028,55 @@ Boa apresentação!`;
                             }
 
                             // Inicializa o controlador secundário na nova janela
-                            // A janela pai passará os valores iniciais
-                            let secondaryTeleprompterInstance;
+                            // Os dados iniciais são passados via parâmetros da URL
                             window.onload = () => {
-                                secondaryTeleprompterInstance = new SecondaryTeleprompterController(
-                                    window.opener.teleprompter.textContent,
-                                    window.opener.teleprompter.speed,
-                                    window.opener.teleprompter.fontSize
-                                );
-                                window.teleprompterInstance = secondaryTeleprompterInstance; // Torna acessível à janela pai
+                                const urlParams = new URLSearchParams(window.location.search);
+                                const text = urlParams.get('text');
+                                const speed = parseFloat(urlParams.get('speed'));
+                                const fontSize = parseInt(urlParams.get('fontSize'));
+
+                                if (text && !isNaN(speed) && !isNaN(fontSize)) {
+                                    const secondaryTeleprompterInstance = new SecondaryTeleprompterController(text, speed, fontSize);
+                                    window.teleprompterInstance = secondaryTeleprompterInstance; // Torna acessível à janela pai
+                                } else {
+                                     // Fallback ou mensagem de erro se os parâmetros estiverem faltando
+                                     document.getElementById('textContent').textContent = 'Erro ao carregar o teleprompter secundário: dados ausentes.';
+                                     const statusDiv = document.getElementById('status');
+                                     if(statusDiv) {
+                                         statusDiv.textContent = 'Erro de carregamento!';
+                                         statusDiv.className = 'status show error';
+                                     }
+                                }
                             };
                         <\/script>
                     </body>
                     </html>
                 `;
+                
+                // Abre a nova janela com os parâmetros na URL
+                const url = `data:text/html;charset=utf-8,${encodeURIComponent(newWindowHtml)}`;
+                try {
+                    // Adicionando 'noopener' e 'noreferrer' para segurança
+                    this.newWindow = window.open(url, '_blank', `width=1920,height=1080,noopener,noreferrer`); 
 
-                // Abre a nova janela e escreve o HTML
-                // O "fullscreen=yes" é uma tentativa, mas pode ser limitado pelo browser
-                this.newWindow = window.open('', '_blank', 'width=1920,height=1080'); // Não use fullscreen diretamente aqui, pode ser bloqueado
-                if (this.newWindow) {
-                    this.newWindow.document.write(newWindowHtml);
-                    this.newWindow.document.close();
-                    // Tenta colocar em fullscreen após a abertura, pode precisar de interação do usuário
-                    // Esta chamada deve ser feita a partir de um evento de clique ou toque iniciado pelo usuário para funcionar
-                    // this.newWindow.document.body.requestFullscreen().catch(e => console.log("Fullscreen denied or not supported:", e));
-                    
-                    this.showStatus('Nova janela aberta para ecrã secundário. Arraste para o monitor externo.', 'success');
-                    // Sincroniza a posição inicial na nova janela
-                    if (this.newWindow.teleprompterInstance) {
-                        this.newWindow.teleprompterInstance.currentPosition = this.currentPosition;
-                        this.newWindow.teleprompterInstance.elements.textContentDiv.style.transform = `translateY(${this.newWindow.innerHeight - (this.newWindow.teleprompterInstance.currentPosition / 10)}px)`;
+                    if (this.newWindow) {
+                        // Sincroniza a posição inicial na nova janela
+                        // É essencial que a instância do teleprompter da nova janela esteja pronta
+                        this.newWindow.onload = () => { // Espera a nova janela carregar
+                            if (this.newWindow.teleprompterInstance) {
+                                this.newWindow.teleprompterInstance.currentPosition = this.currentPosition;
+                                this.newWindow.teleprompterInstance.elements.textContentDiv.style.transform = `translateY(${this.newWindow.innerHeight - (this.newWindow.teleprompterInstance.currentPosition / 10)}px)`;
+                            }
+                        };
+                        this.showStatus('Nova janela aberta para ecrã secundário. Arraste para o monitor externo.', 'success');
+                    } else {
+                        // Caso o pop-up seja bloqueado antes mesmo do try-catch pegar
+                        this.showStatus('Não foi possível abrir a nova janela. Verifique as permissões de pop-up.', 'error');
                     }
-                } else {
-                    this.showStatus('Não foi possível abrir a nova janela. Verifique as permissões de pop-up.', 'error');
+                } catch (e) {
+                    // Captura erros de segurança ou outros que impeçam a abertura
+                    console.error("Erro ao abrir nova janela:", e);
+                    this.showStatus('Erro ao abrir nova janela. Verifique as permissões de pop-up ou a consola para detalhes.', 'error');
                 }
             }
 
