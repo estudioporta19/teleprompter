@@ -338,7 +338,7 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                 
                 <div class="file-input-wrapper">
                     <input type="file" id="fileInput" class="file-input" accept=".txt">
-                    <label for="fileInput" class="file-label">📁 Carregar Ficheiro TXT</label>
+                    <label for="fileInput" class="file-label" id="fileLabel">📁 Carregar Ficheiro TXT</label>
                 </div>
             </div>
 
@@ -355,9 +355,9 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                     <input type="range" id="fontSizeSlider" class="slider" min="24" max="80" value="48" step="2">
                 </div>
 
-                <button class="control-button success" onclick="startTeleprompter()">🚀 Iniciar Teleprompter</button>
-                <button class="control-button" onclick="openNewWindow()">🖥️ Abrir em Nova Janela</button>
-                <button class="control-button danger" onclick="resetTeleprompter()">🔄 Reset</button>
+                <button class="control-button success" id="startButton">🚀 Iniciar Teleprompter</button>
+                <button class="control-button" id="openNewWindowButton">🖥️ Abrir em Nova Janela</button>
+                <button class="control-button danger" id="resetButton">🔄 Reset</button>
             </div>
 
             <div class="control-section">
@@ -412,6 +412,7 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                 this.isLongPress = false;
                 this.touchSensitivity = 50; // Pixels para detectar swipe
                 this.longPressThreshold = 500; // Milissegundos para long press
+                this.longPressTimeout = null;
                 
                 this.initializeElements();
                 this.setupEventListeners();
@@ -430,7 +431,11 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                     fontSizeSlider: document.getElementById('fontSizeSlider'),
                     speedValue: document.getElementById('speedValue'),
                     fontSizeValue: document.getElementById('fontSizeValue'),
-                    status: document.getElementById('status')
+                    status: document.getElementById('status'),
+                    startButton: document.getElementById('startButton'),
+                    openNewWindowButton: document.getElementById('openNewWindowButton'),
+                    resetButton: document.getElementById('resetButton'),
+                    fileLabel: document.getElementById('fileLabel') // Get the label for file input
                 };
             }
 
@@ -451,6 +456,11 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                     this.updateFontSize();
                     this.syncNewWindow(); // Sincroniza a nova janela
                 });
+
+                // Button clicks (programmatic event listeners)
+                this.elements.startButton.addEventListener('click', () => this.startTeleprompter());
+                this.elements.openNewWindowButton.addEventListener('click', () => this.openNewWindow());
+                this.elements.resetButton.addEventListener('click', () => this.resetTeleprompter());
 
                 // Keyboard controls
                 document.addEventListener('keydown', (e) => this.handleKeyboard(e));
@@ -785,6 +795,7 @@ Boa apresentação!`;
                                 padding: 50px; 
                                 line-height: 1.6; 
                                 white-space: pre-wrap; 
+                                transform: translateY(100vh); /* Inicia fora do ecrã da nova janela */
                                 transition: transform 0.1s linear; 
                                 text-align: center; 
                                 width: 100%;
@@ -829,6 +840,7 @@ Boa apresentação!`;
                                     this.isLongPress = false;
                                     this.touchSensitivity = 50;
                                     this.longPressThreshold = 500;
+                                    this.longPressTimeout = null;
                                     
                                     this.setupEventListeners();
                                 }
@@ -1100,24 +1112,9 @@ Boa apresentação!`;
             }
         }
 
-        // Global functions for buttons
-        let teleprompter;
-
-        function startTeleprompter() {
-            teleprompter.startTeleprompter();
-        }
-
-        function openNewWindow() {
-            teleprompter.openNewWindow();
-        }
-
-        function resetTeleprompter() {
-            teleprompter.resetTeleprompter();
-        }
-
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            teleprompter = new TeleprompterController();
+            window.teleprompter = new TeleprompterController(); // Torna a instância global para fácil acesso
         });
     </script>
 </body>
