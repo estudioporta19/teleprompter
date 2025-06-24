@@ -305,8 +305,7 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                     <input type="range" id="fontSizeSlider" class="slider" min="24" max="80" value="48" step="2">
                 </div>
 
-                <button class="control-button success" onclick="startTeleprompter()">🚀 Iniciar Teleprompter</button>
-                <button class="control-button" onclick="openNewWindow()">🖥️ Abrir em Nova Janela</button>
+                <button class="control-button success" onclick="openNewWindow()">🚀 Iniciar Teleprompter (Ecrã Secundário)</button>
                 <button class="control-button danger" onclick="resetTeleprompter()">🔄 Reset</button>
             </div>
 
@@ -654,7 +653,7 @@ Boa apresentação!`;
 
             openNewWindow() {
                 if (!this.textContent.trim()) {
-                    this.showStatus('Adicione texto antes de abrir nova janela!', 'error');
+                    this.showStatus('Adicione texto antes de abrir o teleprompter!', 'error');
                     return;
                 }
 
@@ -667,7 +666,13 @@ Boa apresentação!`;
                         <title>Teleprompter - Ecrã Secundário</title>
                         <style>
                             * { margin: 0; padding: 0; box-sizing: border-box; }
-                            body { background: #000; color: white; overflow: hidden; font-family: Arial, sans-serif; }
+                            body { 
+                                background: #000; 
+                                color: white; 
+                                overflow: hidden; 
+                                font-family: Arial, sans-serif; 
+                                touch-action: pan-y;
+                            }
                             .text-content { 
                                 padding: 50px; 
                                 font-size: ${this.fontSize}px; 
@@ -676,10 +681,182 @@ Boa apresentação!`;
                                 transform: translateY(100vh); 
                                 transition: transform 0.1s linear; 
                             }
+                            .status {
+                                position: fixed;
+                                top: 20px;
+                                right: 20px;
+                                background: rgba(0, 0, 0, 0.8);
+                                color: white;
+                                padding: 10px 20px;
+                                border-radius: 20px;
+                                font-weight: bold;
+                                z-index: 1001;
+                                display: none;
+                            }
+                            .status.show { display: block; }
                         </style>
                     </head>
                     <body>
+                        <div class="status" id="status"></div>
                         <div class="text-content" id="textContent">${this.textContent}</div>
+                        <script>
+                            let currentPosition = 0;
+                            let isRunning = false;
+                            let speed = ${this.speed};
+                            let animationId = null;
+                            let startY = 0;
+                            let startTime = 0;
+                            let isLongPress = false;
+
+                            function showStatus(message) {
+                                const status = document.getElementById('status');
+                                status.textContent = message;
+                                status.classList.add('show');
+                                setTimeout(() => status.classList.remove('show'), 3000);
+                            }
+
+                            function animate() {
+                                if (!isRunning) return;
+                                currentPosition += speed;
+                                document.getElementById('textContent').style.transform = \`translateY(\${100 - (currentPosition / 10)}vh)\`;
+                                
+                                if (currentPosition >= getMaxPosition()) {
+                                    pause();
+                                    showStatus('Fim do texto alcançado');
+                                    return;
+                                }
+                                animationId = requestAnimationFrame(animate);
+                            }
+
+                            function play() {
+                                isRunning = true;
+                                showStatus('Reproduzindo');
+                                animate();
+                            }
+
+                            function pause() {
+                                isRunning = false;
+                                showStatus('Pausado');
+                                if (animationId) cancelAnimationFrame(animationId);
+                            }
+
+                            function togglePlayPause() {
+                                isRunning ? pause() : play();
+                            }
+
+                            function adjustSpeed(delta) {
+                                speed = Math.max(0, Math.min(5, speed + delta));
+                                showStatus(\`Velocidade: \${speed.toFixed(1)}\`);
+                            }
+
+                            function adjustPosition(delta) {
+                                currentPosition = Math.max(0, Math.min(getMaxPosition(), currentPosition + delta));
+                                document.getElementById('textContent').style.transform = \`translateY(\${100 - (currentPosition / 10)}vh)\`;
+                            }
+
+                            function resetPosition() {
+                                currentPosition = 0;
+                                document.getElementById('textContent').style.transform = 'translateY(100vh)';
+                                showStatus('Posição reiniciada');
+                            }
+
+                            function getMaxPosition() {
+                                const contentHeight = document.getElementById('textContent').scrollHeight;
+                                const windowHeight = window.innerHeight;
+                                return Math.max(0, (contentHeight + windowHeight) * 10);
+                            }
+
+                            // Keyboard controls
+                            document.addEventListener('keydown', (e) => {
+                                switch(e.code) {
+                                    case 'Space':
+                                        e.preventDefault();
+                                        togglePlayPause();
+                                        break;
+                                    case 'ArrowUp':
+                                        e.preventDefault();
+                                        adjustSpeed(0.2);
+                                        break;
+                                    case 'ArrowDown':
+                                        e.preventDefault();
+                                        adjustSpeed(-0.2);
+                                        break;
+                                    case 'ArrowLeft':
+                                        e.preventDefault();
+                                        adjustPosition(-100);
+                                        break;
+                                    case 'ArrowRight':
+                                        e.preventDefault();
+                                        adjustPosition(100);
+                                        break;
+                                    case 'KeyR':
+                                        e.preventDefault();
+                                        resetPosition();
+                                        break;
+                                }
+                            });
+
+                            // Touch controls
+                            document.addEventListener('touchstart', (e) => {
+                                e.preventDefault();
+                                const touch = e.touches[0];
+                                startY = touch.clientY;
+                                startTime = Date.now();
+                                isLongPress = false;
+
+                                setTimeout(() => {
+                                    if (Date.now() - startTime >= 500) {
+                                        isLongPress = true;
+                                        resetPosition();
+                                    }
+                                }, 500);
+                            }, { passive: false });
+
+                            document.addEventListener('touchend', (e) => {
+                                e.preventDefault();
+                                if (isLongPress) return;
+
+                                const touch = e.changedTouches[0];
+                                const endY = touch.clientY;
+                                const deltaY = startY - endY;
+                                const deltaTime = Date.now() - startTime;
+
+                                if (Math.abs(deltaY) < 30 && deltaTime < 300) {
+                                    togglePlayPause();
+                                } else if (Math.abs(deltaY) > 50) {
+                                    if (deltaY > 0) {
+                                        adjustSpeed(0.5);
+                                        showStatus('Velocidade aumentada');
+                                    } else {
+                                        if (speed > 0.5) {
+                                            adjustSpeed(-0.5);
+                                            showStatus('Velocidade diminuída');
+                                        } else {
+                                            pause();
+                                        }
+                                    }
+                                }
+                            }, { passive: false });
+
+                            document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+                            document.addEventListener('click', togglePlayPause);
+
+                            // Listen for updates from parent window
+                            window.addEventListener('message', (event) => {
+                                if (event.data.type === 'updateText') {
+                                    document.getElementById('textContent').textContent = event.data.text;
+                                }
+                                if (event.data.type === 'updateFontSize') {
+                                    document.getElementById('textContent').style.fontSize = event.data.fontSize + 'px';
+                                }
+                                if (event.data.type === 'updateSpeed') {
+                                    speed = event.data.speed;
+                                }
+                            });
+
+                            // Auto-start message
+                            showStatus('Teleprompter pronto - Pressione ESPAÇO para começar');
+                        </script>
                     </body>
                     </html>
                 `;
@@ -688,7 +865,10 @@ Boa apresentação!`;
                 this.newWindow.document.write(newWindowHtml);
                 this.newWindow.document.close();
                 
-                this.showStatus('Nova janela aberta para ecrã secundário', 'success');
+                this.showStatus('Teleprompter iniciado no ecrã secundário', 'success');
+                
+                // Setup communication with new window
+                this.setupWindowCommunication();
             }
 
             showStatus(message, type = 'info') {
