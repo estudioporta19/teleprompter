@@ -5,21 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teleprompter Profissional</title>
     <style>
-        /* Estilos globais e reset */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif; /* Usando Font Inter conforme instrução */
         }
 
         body {
+            font-family: 'Arial', sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
-            overflow: hidden; /* Evita scroll na página principal */
+            overflow: hidden;
         }
 
-        /* Painel de Controlo */
         .control-panel {
             position: fixed;
             top: 0;
@@ -31,22 +29,19 @@
             display: flex;
             flex-direction: column;
             padding: 20px;
-            overflow-y: auto; /* Permite scroll no painel de controlo em telas pequenas */
         }
 
         .control-panel.hidden {
             display: none;
         }
 
-        /* Cabeçalho */
         .header {
             text-align: center;
             margin-bottom: 20px;
             padding: 20px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px; /* Cantos arredondados */
+            border-radius: 15px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2); /* Borda sutil */
         }
 
         .header h1 {
@@ -58,22 +53,19 @@
             background-clip: text;
         }
 
-        /* Grelha de Controlo */
         .control-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsivo para colunas */
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
             flex: 1;
         }
 
-        /* Secções de Controlo */
         .control-section {
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px; /* Cantos arredondados */
+            border-radius: 15px;
             padding: 20px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Sombra para profundidade */
         }
 
         .control-section h3 {
@@ -82,13 +74,12 @@
             font-size: 1.3em;
         }
 
-        /* Textarea */
         textarea {
             width: 100%;
             height: 200px;
             background: rgba(0, 0, 0, 0.3);
             border: 2px solid #4ecdc4;
-            border-radius: 10px; /* Cantos arredondados */
+            border-radius: 10px;
             padding: 15px;
             color: white;
             font-size: 16px;
@@ -101,7 +92,6 @@
             color: rgba(255, 255, 255, 0.6);
         }
 
-        /* Input de Ficheiro */
         .file-input-wrapper {
             position: relative;
             display: inline-block;
@@ -117,11 +107,10 @@
             padding: 12px 24px;
             background: linear-gradient(45deg, #ff6b6b, #ee5a52);
             color: white;
-            border-radius: 25px; /* Cantos arredondados */
+            border-radius: 25px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
 
         .file-label:hover {
@@ -129,19 +118,17 @@
             box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
         }
 
-        /* Botões de Controlo */
         .control-button {
             padding: 15px 30px;
             margin: 5px;
             background: linear-gradient(45deg, #4ecdc4, #44a08d);
             border: none;
-            border-radius: 25px; /* Cantos arredondados */
+            border-radius: 25px;
             color: white;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
 
         .control-button:hover {
@@ -157,7 +144,6 @@
             background: linear-gradient(45deg, #51cf66, #40c057);
         }
 
-        /* Sliders */
         .slider-container {
             margin: 15px 0;
         }
@@ -176,7 +162,6 @@
             background: rgba(255, 255, 255, 0.2);
             outline: none;
             -webkit-appearance: none;
-            appearance: none;
         }
 
         .slider::-webkit-slider-thumb {
@@ -188,7 +173,6 @@
             background: #4ecdc4;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .slider::-webkit-slider-thumb:hover {
@@ -196,7 +180,6 @@
             box-shadow: 0 0 10px rgba(78, 205, 196, 0.6);
         }
 
-        /* Ecrã do Teleprompter (Display) */
         .teleprompter-display {
             position: fixed;
             top: 0;
@@ -205,9 +188,9 @@
             height: 100vh;
             background: #000;
             color: white;
-            display: none; /* Escondido por padrão */
+            display: none;
             overflow: hidden;
-            touch-action: pan-y; /* Permite scroll vertical touch */
+            touch-action: pan-y;
         }
 
         .teleprompter-display.active {
@@ -216,22 +199,17 @@
 
         .text-content {
             padding: 50px;
-            font-size: 48px; /* Tamanho de fonte padrão */
+            font-size: 48px;
             line-height: 1.6;
             font-family: 'Arial', sans-serif;
-            white-space: pre-wrap; /* Preserva espaços e quebras de linha */
-            transform: translateY(100vh); /* Começa fora do ecrã */
-            transition: transform 0.1s linear; /* Rolagem suave */
-            /* Centraliza o texto horizontalmente */
-            text-align: center; 
-            width: 100%;
-            box-sizing: border-box; /* Garante que padding não cause overflow */
+            white-space: pre-wrap;
+            transform: translateY(100vh);
+            transition: transform 0.1s linear;
         }
 
-        /* Instruções */
         .instructions {
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px; /* Cantos arredondados */
+            border-radius: 10px;
             padding: 15px;
             margin-top: 15px;
             border-left: 4px solid #4ecdc4;
@@ -260,7 +238,6 @@
             color: #4ecdc4;
         }
 
-        /* Status */
         .status {
             position: fixed;
             top: 20px;
@@ -268,51 +245,24 @@
             background: rgba(0, 0, 0, 0.8);
             color: white;
             padding: 10px 20px;
-            border-radius: 20px; /* Cantos arredondados */
+            border-radius: 20px;
             font-weight: bold;
             z-index: 1001;
             display: none;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            opacity: 0; /* Escondido por padrão */
-            transition: opacity 0.3s ease-in-out;
         }
 
         .status.show {
             display: block;
-            opacity: 1;
-        }
-        .status.error {
-            background-color: #e74c3c;
-        }
-        .status.success {
-            background-color: #27ae60;
-        }
-        .status.info {
-            background-color: #3498db;
         }
 
-        /* Media Queries para Responsividade */
         @media (max-width: 768px) {
             .control-grid {
-                grid-template-columns: 1fr; /* Uma coluna em telas menores */
+                grid-template-columns: 1fr;
             }
             
             .text-content {
                 padding: 30px;
-                font-size: 32px; /* Reduz o tamanho da fonte para telas menores */
-            }
-
-            .control-panel {
-                padding: 15px;
-            }
-
-            .header h1 {
-                font-size: 2em;
-            }
-
-            .control-button {
-                width: 100%; /* Botões ocupam a largura total */
-                margin: 5px 0;
+                font-size: 32px;
             }
         }
     </style>
@@ -338,7 +288,7 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                 
                 <div class="file-input-wrapper">
                     <input type="file" id="fileInput" class="file-input" accept=".txt">
-                    <label for="fileInput" class="file-label" id="fileLabel">📁 Carregar Ficheiro TXT</label>
+                    <label for="fileInput" class="file-label">📁 Carregar Ficheiro TXT</label>
                 </div>
             </div>
 
@@ -346,7 +296,7 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                 <h3>⚙️ Controlos</h3>
                 
                 <div class="slider-container">
-                    <label for="speedSlider">Velocidade: <span id="speedValue">2.0</span></label>
+                    <label for="speedSlider">Velocidade: <span id="speedValue">2</span></label>
                     <input type="range" id="speedSlider" class="slider" min="0.5" max="5" value="2" step="0.1">
                 </div>
 
@@ -355,9 +305,9 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                     <input type="range" id="fontSizeSlider" class="slider" min="24" max="80" value="48" step="2">
                 </div>
 
-                <button class="control-button success" id="startButton">🚀 Iniciar Teleprompter</button>
-                <button class="control-button" id="openNewWindowButton">🖥️ Abrir em Nova Janela</button>
-                <button class="control-button danger" id="resetButton">🔄 Reset</button>
+                <button class="control-button success" onclick="startTeleprompter()">🚀 Iniciar Teleprompter</button>
+                <button class="control-button" onclick="openNewWindow()">🖥️ Abrir em Nova Janela</button>
+                <button class="control-button danger" onclick="resetTeleprompter()">🔄 Reset</button>
             </div>
 
             <div class="control-section">
@@ -404,20 +354,16 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                 this.currentPosition = 0;
                 this.animationId = null;
                 this.textContent = '';
-                this.newWindow = null; // Referência para a nova janela
-
+                this.newWindow = null;
+                
                 // Touch handling
                 this.startY = 0;
                 this.startTime = 0;
                 this.isLongPress = false;
-                this.touchSensitivity = 50; // Pixels para detectar swipe
-                this.longPressThreshold = 500; // Milissegundos para long press
-                this.longPressTimeout = null;
                 
                 this.initializeElements();
                 this.setupEventListeners();
                 this.loadSampleText();
-                this.updateFontSize(); // Garante que a fonte inicial esteja correta
             }
 
             initializeElements() {
@@ -431,11 +377,7 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                     fontSizeSlider: document.getElementById('fontSizeSlider'),
                     speedValue: document.getElementById('speedValue'),
                     fontSizeValue: document.getElementById('fontSizeValue'),
-                    status: document.getElementById('status'),
-                    startButton: document.getElementById('startButton'),
-                    openNewWindowButton: document.getElementById('openNewWindowButton'),
-                    resetButton: document.getElementById('resetButton'),
-                    fileLabel: document.getElementById('fileLabel') // Get the label for file input
+                    status: document.getElementById('status')
                 };
             }
 
@@ -447,40 +389,31 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                 this.elements.speedSlider.addEventListener('input', (e) => {
                     this.speed = parseFloat(e.target.value);
                     this.elements.speedValue.textContent = this.speed.toFixed(1);
-                    this.syncNewWindow(); // Sincroniza a nova janela
                 });
 
                 this.elements.fontSizeSlider.addEventListener('input', (e) => {
                     this.fontSize = parseInt(e.target.value);
                     this.elements.fontSizeValue.textContent = this.fontSize;
                     this.updateFontSize();
-                    this.syncNewWindow(); // Sincroniza a nova janela
                 });
-
-                // Button clicks (programmatic event listeners)
-                this.elements.startButton.addEventListener('click', () => this.startTeleprompter());
-                this.elements.openNewWindowButton.addEventListener('click', () => this.openNewWindow());
-                this.elements.resetButton.addEventListener('click', () => this.resetTeleprompter());
 
                 // Keyboard controls
                 document.addEventListener('keydown', (e) => this.handleKeyboard(e));
 
-                // Touch controls (no display principal)
+                // Touch controls
                 this.elements.teleprompterDisplay.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
                 this.elements.teleprompterDisplay.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
-                // Previne o scroll padrão da página durante o touchmove no display
                 this.elements.teleprompterDisplay.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
-                // Click controls (no display principal)
+                // Click controls
                 this.elements.teleprompterDisplay.addEventListener('click', () => this.togglePlayPause());
 
                 // Text input changes
                 this.elements.textInput.addEventListener('input', () => {
                     this.textContent = this.elements.textInput.value;
-                    this.syncNewWindow(); // Sincroniza a nova janela
                 });
 
-                // Window close detection for the new window
+                // Window close detection
                 window.addEventListener('beforeunload', () => {
                     if (this.newWindow && !this.newWindow.closed) {
                         this.newWindow.close();
@@ -513,19 +446,12 @@ Boa apresentação!`;
 
             loadFile(event) {
                 const file = event.target.files[0];
-                console.log("Tentando carregar ficheiro:", file); // Debugging
                 if (file && file.type === 'text/plain') {
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        console.log("Ficheiro lido com sucesso."); // Debugging
                         this.textContent = e.target.result;
                         this.elements.textInput.value = this.textContent;
                         this.showStatus('Ficheiro carregado com sucesso!', 'success');
-                        this.syncNewWindow(); // Sincroniza a nova janela
-                    };
-                    reader.onerror = (e) => {
-                        console.error("Erro ao ler ficheiro:", e); // Debugging
-                        this.showStatus('Erro ao ler o ficheiro.', 'error');
                     };
                     reader.readAsText(file);
                 } else {
@@ -534,80 +460,59 @@ Boa apresentação!`;
             }
 
             handleKeyboard(event) {
-                // Se a nova janela estiver aberta e ativa, os controlos do teclado aplicam-se a ela.
-                // Caso contrário, aplicam-se ao display principal (se ativo).
-                const targetTeleprompter = (this.newWindow && !this.newWindow.closed && this.newWindow.teleprompterInstance) 
-                                           ? this.newWindow.teleprompterInstance 
-                                           : (this.elements.teleprompterDisplay.classList.contains('active') ? this : null);
-                
-                if (!targetTeleprompter) return; // Nenhum teleprompter ativo para controlo
+                if (!this.elements.teleprompterDisplay.classList.contains('active')) return;
 
                 switch(event.code) {
                     case 'Space':
                         event.preventDefault();
-                        targetTeleprompter.togglePlayPause();
-                        this.syncNewWindow(); // Sincroniza a nova janela
+                        this.togglePlayPause();
                         break;
                     case 'ArrowUp':
                         event.preventDefault();
-                        targetTeleprompter.adjustSpeed(0.2);
-                        this.syncNewWindow(); // Sincroniza a nova janela
+                        this.adjustSpeed(0.2);
                         break;
                     case 'ArrowDown':
                         event.preventDefault();
-                        targetTeleprompter.adjustSpeed(-0.2);
-                        this.syncNewWindow(); // Sincroniza a nova janela
+                        this.adjustSpeed(-0.2);
                         break;
                     case 'ArrowLeft':
                         event.preventDefault();
-                        targetTeleprompter.adjustPosition(-100);
-                        this.syncNewWindow(); // Sincroniza a nova janela
+                        this.adjustPosition(-100);
                         break;
                     case 'ArrowRight':
                         event.preventDefault();
-                        targetTeleprompter.adjustPosition(100);
-                        this.syncNewWindow(); // Sincroniza a nova janela
+                        this.adjustPosition(100);
                         break;
                     case 'Escape':
                         event.preventDefault();
-                        // Se estiver na janela principal, sai. Se estiver na nova janela, fecha a nova janela.
-                        if (targetTeleprompter === this) {
-                             this.exitTeleprompter();
-                        } else if (this.newWindow && !this.newWindow.closed) {
-                            this.newWindow.close();
-                            this.newWindow = null; // Limpa a referência
-                            this.showStatus('Janela secundária fechada', 'info');
-                        }
+                        this.exitTeleprompter();
                         break;
                     case 'KeyR':
                         event.preventDefault();
-                        targetTeleprompter.resetPosition();
-                        this.syncNewWindow(); // Sincroniza a nova janela
+                        this.resetPosition();
                         break;
                 }
             }
 
             handleTouchStart(event) {
-                event.preventDefault(); // Previne o scroll e outros comportamentos padrão do browser
+                event.preventDefault();
                 const touch = event.touches[0];
                 this.startY = touch.clientY;
                 this.startTime = Date.now();
                 this.isLongPress = false;
 
                 // Long press detection
-                this.longPressTimeout = setTimeout(() => {
-                    if (Date.now() - this.startTime >= this.longPressThreshold) {
+                setTimeout(() => {
+                    if (Date.now() - this.startTime >= 500) {
                         this.isLongPress = true;
                         this.resetPosition();
                         this.showStatus('Posição reiniciada', 'info');
-                        this.syncNewWindow(); // Sincroniza a nova janela
                     }
-                }, this.longPressThreshold);
+                }, 500);
             }
 
             handleTouchEnd(event) {
-                event.preventDefault(); // Previne o scroll e outros comportamentos padrão do browser
-                clearTimeout(this.longPressTimeout); // Limpa o timeout para evitar falso long press
+                event.preventDefault();
                 if (this.isLongPress) return;
 
                 const touch = event.changedTouches[0];
@@ -618,24 +523,20 @@ Boa apresentação!`;
                 if (Math.abs(deltaY) < 30 && deltaTime < 300) {
                     // Tap
                     this.togglePlayPause();
-                    this.syncNewWindow(); // Sincroniza a nova janela
-                } else if (Math.abs(deltaY) > this.touchSensitivity) {
+                } else if (Math.abs(deltaY) > 50) {
                     // Swipe
                     if (deltaY > 0) {
                         // Swipe up - speed up
                         this.adjustSpeed(0.5);
                         this.showStatus('Velocidade aumentada', 'info');
-                        this.syncNewWindow(); // Sincroniza a nova janela
                     } else {
                         // Swipe down - slow down or stop
                         if (this.speed > 0.5) {
                             this.adjustSpeed(-0.5);
                             this.showStatus('Velocidade diminuída', 'info');
-                            this.syncNewWindow(); // Sincroniza a nova janela
                         } else {
                             this.pause();
                             this.showStatus('Pausado', 'info');
-                            this.syncNewWindow(); // Sincroniza a nova janela
                         }
                     }
                 }
@@ -647,7 +548,6 @@ Boa apresentação!`;
                 } else {
                     this.play();
                 }
-                this.syncNewWindow(); // Sincroniza a nova janela
             }
 
             play() {
@@ -659,7 +559,6 @@ Boa apresentação!`;
                 this.isRunning = true;
                 this.showStatus('Reproduzindo', 'success');
                 this.animate();
-                this.syncNewWindow(); // Sincroniza a nova janela
             }
 
             pause() {
@@ -668,26 +567,18 @@ Boa apresentação!`;
                 if (this.animationId) {
                     cancelAnimationFrame(this.animationId);
                 }
-                this.syncNewWindow(); // Sincroniza a nova janela
             }
 
             animate() {
                 if (!this.isRunning) return;
 
                 this.currentPosition += this.speed;
-                // Move o conteúdo para cima. O 100vh inicial garante que o texto comece fora do ecrã.
-                // Divide por 10 para tornar a velocidade mais sensível, pois translateY usa VH.
-                this.elements.textContentDiv.style.transform = `translateY(${window.innerHeight - (this.currentPosition / 10)}px)`;
+                this.elements.textContentDiv.style.transform = `translateY(${100 - (this.currentPosition / 10)}vh)`;
 
-                // Verifica se o topo do conteúdo atingiu a posição de "fim"
-                // A posição máxima é calculada para que o último parágrafo saia do ecrã
-                const maxScrollPosition = this.elements.textContentDiv.scrollHeight - (window.innerHeight * 0.1); // Ajuste fino para o final
-                
-                if (this.currentPosition / 10 >= maxScrollPosition) {
+                // Check if we've reached the end
+                if (this.currentPosition >= this.getMaxPosition()) {
                     this.pause();
                     this.showStatus('Fim do texto alcançado', 'info');
-                    // Opcional: Reiniciar automaticamente ou voltar ao início
-                    // this.resetPosition(); 
                     return;
                 }
 
@@ -695,58 +586,54 @@ Boa apresentação!`;
             }
 
             adjustSpeed(delta) {
-                this.speed = Math.max(0.5, Math.min(5, this.speed + delta)); // Limites de velocidade 0.5 a 5
+                this.speed = Math.max(0, Math.min(5, this.speed + delta));
                 this.elements.speedSlider.value = this.speed;
                 this.elements.speedValue.textContent = this.speed.toFixed(1);
                 this.showStatus(`Velocidade: ${this.speed.toFixed(1)}`, 'info');
-                this.syncNewWindow(); // Sincroniza a nova janela
             }
 
             adjustPosition(delta) {
-                // Ajusta a posição, mantendo-a dentro dos limites do conteúdo.
-                const contentHeight = this.elements.textContentDiv.scrollHeight;
-                const windowHeight = window.innerHeight;
-                const maxPositionPx = contentHeight + (windowHeight * 0.1); // Permite o texto sair um pouco do ecrã
-
-                let newPosition = this.currentPosition + delta;
-
-                // Garante que a posição não seja negativa e não ultrapasse o final do conteúdo visível
-                this.currentPosition = Math.max(0, Math.min(maxPositionPx * 10, newPosition)); // * 10 para converter em "unidades" da velocidade
-                this.elements.textContentDiv.style.transform = `translateY(${window.innerHeight - (this.currentPosition / 10)}px)`;
-                this.showStatus('Ajustando posição', 'info');
-                this.syncNewWindow(); // Sincroniza a nova janela
+                this.currentPosition = Math.max(0, Math.min(this.getMaxPosition(), this.currentPosition + delta));
+                this.elements.textContentDiv.style.transform = `translateY(${100 - (this.currentPosition / 10)}vh)`;
             }
-            
+
             resetPosition() {
                 this.currentPosition = 0;
-                this.elements.textContentDiv.style.transform = `translateY(${window.innerHeight}px)`;
+                this.elements.textContentDiv.style.transform = 'translateY(100vh)';
                 this.showStatus('Posição reiniciada', 'info');
-                this.syncNewWindow(); // Sincroniza a nova janela
+            }
+
+            getMaxPosition() {
+                const contentHeight = this.elements.textContentDiv.scrollHeight;
+                const windowHeight = window.innerHeight;
+                return Math.max(0, (contentHeight + windowHeight) * 10);
             }
 
             updateFontSize() {
                 this.elements.textContentDiv.style.fontSize = `${this.fontSize}px`;
-                this.syncNewWindow(); // Sincroniza a nova janela
+                if (this.newWindow && !this.newWindow.closed) {
+                    const newWindowTextContent = this.newWindow.document.getElementById('textContent');
+                    if (newWindowTextContent) {
+                        newWindowTextContent.style.fontSize = `${this.fontSize}px`;
+                    }
+                }
             }
 
             startTeleprompter() {
-                console.log("startTeleprompter chamado."); // Debugging
                 this.textContent = this.elements.textInput.value;
                 if (!this.textContent.trim()) {
                     this.showStatus('Adicione texto antes de iniciar!', 'error');
-                    console.log("Erro: Texto vazio."); // Debugging
                     return;
                 }
 
                 this.elements.textContentDiv.textContent = this.textContent;
-                this.updateFontSize(); // Aplica o tamanho da fonte
-                this.resetPosition(); // Reinicia a posição para o início
+                this.updateFontSize();
+                this.resetPosition();
                 
                 this.elements.controlPanel.classList.add('hidden');
                 this.elements.teleprompterDisplay.classList.add('active');
                 
-                this.showStatus('Teleprompter iniciado - Pressione ESPAÇO ou toque para começar', 'success');
-                this.syncNewWindow(); // Sincroniza a nova janela
+                this.showStatus('Teleprompter iniciado - Pressione ESPAÇO para começar', 'success');
             }
 
             exitTeleprompter() {
@@ -754,7 +641,6 @@ Boa apresentação!`;
                 this.elements.controlPanel.classList.remove('hidden');
                 this.elements.teleprompterDisplay.classList.remove('active');
                 this.showStatus('Teleprompter fechado', 'info');
-                this.syncNewWindow(); // Sincroniza a nova janela
             }
 
             resetTeleprompter() {
@@ -764,7 +650,6 @@ Boa apresentação!`;
                 this.elements.speedSlider.value = 2;
                 this.elements.speedValue.textContent = '2.0';
                 this.showStatus('Teleprompter reiniciado', 'info');
-                this.syncNewWindow(); // Sincroniza a nova janela
             }
 
             openNewWindow() {
@@ -773,15 +658,7 @@ Boa apresentação!`;
                     return;
                 }
 
-                // Fecha a janela existente se houver uma para evitar múltiplas
-                if (this.newWindow && !this.newWindow.closed) {
-                    this.newWindow.close();
-                    this.newWindow = null;
-                }
-
-                // Cria o HTML para a nova janela, sem conteúdo inicialmente
-                // O conteúdo será enviado via postMessage
-                const newWindowHtmlTemplate = `
+                const newWindowHtml = `
                     <!DOCTYPE html>
                     <html lang="pt">
                     <head>
@@ -789,332 +666,59 @@ Boa apresentação!`;
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>Teleprompter - Ecrã Secundário</title>
                         <style>
-                            * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-                            body { background: #000; color: white; overflow: hidden; }
+                            * { margin: 0; padding: 0; box-sizing: border-box; }
+                            body { background: #000; color: white; overflow: hidden; font-family: Arial, sans-serif; }
                             .text-content { 
                                 padding: 50px; 
+                                font-size: ${this.fontSize}px; 
                                 line-height: 1.6; 
                                 white-space: pre-wrap; 
-                                transform: translateY(100vh); /* Inicia fora do ecrã da nova janela */
+                                transform: translateY(100vh); 
                                 transition: transform 0.1s linear; 
-                                text-align: center; 
-                                width: 100%;
-                                box-sizing: border-box;
-                            }
-                            .status {
-                                position: fixed; top: 20px; right: 20px; background: rgba(0, 0, 0, 0.8);
-                                color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold;
-                                z-index: 1001; display: none; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-                                opacity: 0; transition: opacity 0.3s ease-in-out;
-                            }
-                            .status.show { display: block; opacity: 1; }
-                            .status.error { background-color: #e74c3c; }
-                            .status.success { background-color: #27ae60; }
-                            .status.info { background-color: #3498db; }
-                            @media (max-width: 768px) {
-                                .text-content { padding: 30px; font-size: 32px; }
                             }
                         </style>
                     </head>
                     <body>
-                        <div class="status" id="status"></div>
-                        <div class="text-content" id="textContent"></div>
-                        <script>
-                            // Script para a nova janela (mini-controlador)
-                            class SecondaryTeleprompterController {
-                                constructor() {
-                                    this.isRunning = false;
-                                    this.speed = 2; // Default, will be updated by postMessage
-                                    this.fontSize = 48; // Default, will be updated by postMessage
-                                    this.currentPosition = 0;
-                                    this.animationId = null;
-                                    this.textContent = '';
-
-                                    this.elements = {
-                                        textContentDiv: document.getElementById('textContent'),
-                                        status: document.getElementById('status')
-                                    };
-
-                                    this.startY = 0;
-                                    this.startTime = 0;
-                                    this.isLongPress = false;
-                                    this.touchSensitivity = 50;
-                                    this.longPressThreshold = 500;
-                                    this.longPressTimeout = null;
-                                    
-                                    this.setupEventListeners();
-                                }
-
-                                setupEventListeners() {
-                                    document.addEventListener('keydown', (e) => this.handleKeyboard(e));
-                                    this.elements.textContentDiv.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
-                                    this.elements.textContentDiv.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
-                                    this.elements.textContentDiv.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
-                                    this.elements.textContentDiv.addEventListener('click', () => this.togglePlayPause());
-
-                                    // Listen for messages from the parent window
-                                    window.addEventListener('message', (event) => {
-                                        // A segurança do event.origin deve ser implementada em produção
-                                        // if (event.origin !== 'https://your-github-username.github.io') return; 
-                                        if (event.data.type === 'teleprompterUpdate') {
-                                            this.updateContent(event.data.payload);
-                                        }
-                                    });
-                                }
-
-                                handleKeyboard(event) {
-                                    switch(event.code) {
-                                        case 'Space':
-                                            event.preventDefault();
-                                            this.togglePlayPause();
-                                            break;
-                                        case 'ArrowUp':
-                                            event.preventDefault();
-                                            this.adjustSpeed(0.2);
-                                            break;
-                                        case 'ArrowDown':
-                                            event.preventDefault();
-                                            this.adjustSpeed(-0.2);
-                                            break;
-                                        case 'ArrowLeft':
-                                            event.preventDefault();
-                                            this.adjustPosition(-100);
-                                            break;
-                                        case 'ArrowRight':
-                                            event.preventDefault();
-                                            this.adjustPosition(100);
-                                            break;
-                                        case 'Escape':
-                                            event.preventDefault();
-                                            window.close(); // Fecha a janela secundária
-                                            break;
-                                        case 'KeyR':
-                                            event.preventDefault();
-                                            this.resetPosition();
-                                            break;
-                                    }
-                                }
-
-                                handleTouchStart(event) {
-                                    event.preventDefault();
-                                    const touch = event.touches[0];
-                                    this.startY = touch.clientY;
-                                    this.startTime = Date.now();
-                                    this.isLongPress = false;
-
-                                    this.longPressTimeout = setTimeout(() => {
-                                        if (Date.now() - this.startTime >= this.longPressThreshold) {
-                                            this.isLongPress = true;
-                                            this.resetPosition();
-                                            this.showStatus('Posição reiniciada', 'info');
-                                        }
-                                    }, this.longPressThreshold);
-                                }
-
-                                handleTouchEnd(event) {
-                                    event.preventDefault();
-                                    clearTimeout(this.longPressTimeout);
-                                    if (this.isLongPress) return;
-
-                                    const touch = event.changedTouches[0];
-                                    const endY = touch.clientY;
-                                    const deltaY = this.startY - endY;
-                                    const deltaTime = Date.now() - this.startTime;
-
-                                    if (Math.abs(deltaY) < 30 && deltaTime < 300) {
-                                        this.togglePlayPause();
-                                    } else if (Math.abs(deltaY) > this.touchSensitivity) {
-                                        if (deltaY > 0) {
-                                            this.adjustSpeed(0.5);
-                                            this.showStatus('Velocidade aumentada', 'info');
-                                        } else {
-                                            if (this.speed > 0.5) {
-                                                this.adjustSpeed(-0.5);
-                                                this.showStatus('Velocidade diminuída', 'info');
-                                            } else {
-                                                this.pause();
-                                                this.showStatus('Pausado', 'info');
-                                            }
-                                        }
-                                    }
-                                }
-
-                                togglePlayPause() {
-                                    if (this.isRunning) {
-                                        this.pause();
-                                    } else {
-                                        this.play();
-                                    }
-                                }
-
-                                play() {
-                                    this.isRunning = true;
-                                    this.showStatus('Reproduzindo', 'success');
-                                    this.animate();
-                                }
-
-                                pause() {
-                                    this.isRunning = false;
-                                    this.showStatus('Pausado', 'info');
-                                    if (this.animationId) {
-                                        cancelAnimationFrame(this.animationId);
-                                    }
-                                }
-
-                                animate() {
-                                    if (!this.isRunning) return;
-
-                                    this.currentPosition += this.speed;
-                                    this.elements.textContentDiv.style.transform = `translateY(${window.innerHeight - (this.currentPosition / 10)}px)`;
-                                    
-                                    const maxScrollPosition = this.elements.textContentDiv.scrollHeight - (window.innerHeight * 0.1);
-                                    if (this.currentPosition / 10 >= maxScrollPosition) {
-                                        this.pause();
-                                        this.showStatus('Fim do texto alcançado', 'info');
-                                        return;
-                                    }
-
-                                    this.animationId = requestAnimationFrame(() => this.animate());
-                                }
-
-                                adjustSpeed(delta) {
-                                    this.speed = Math.max(0.5, Math.min(5, this.speed + delta));
-                                    this.showStatus(`Velocidade: ${this.speed.toFixed(1)}`, 'info');
-                                }
-
-                                adjustPosition(delta) {
-                                    const contentHeight = this.elements.textContentDiv.scrollHeight;
-                                    const windowHeight = window.innerHeight;
-                                    const maxPositionPx = contentHeight + (windowHeight * 0.1);
-
-                                    let newPosition = this.currentPosition + delta;
-                                    this.currentPosition = Math.max(0, Math.min(maxPositionPx * 10, newPosition));
-                                    this.elements.textContentDiv.style.transform = `translateY(${window.innerHeight - (this.currentPosition / 10)}px)`;
-                                    this.showStatus('Ajustando posição', 'info');
-                                }
-
-                                resetPosition() {
-                                    this.currentPosition = 0;
-                                    this.elements.textContentDiv.style.transform = `translateY(${window.innerHeight}px)`;
-                                    this.showStatus('Posição reiniciada', 'info');
-                                }
-
-                                updateContent(data) {
-                                    // Esta função é chamada quando a janela principal envia uma mensagem
-                                    console.log("Recebida atualização na janela secundária:", data); // Debugging
-                                    if (data.textContent !== undefined && this.textContent !== data.textContent) {
-                                        this.textContent = data.textContent;
-                                        this.elements.textContentDiv.textContent = this.textContent;
-                                        this.resetPosition(); // Reinicia a posição quando o conteúdo muda
-                                        this.pause(); // Pausa ao carregar novo conteúdo
-                                    }
-                                    if (data.speed !== undefined) {
-                                        this.speed = data.speed;
-                                    }
-                                    if (data.fontSize !== undefined) {
-                                        this.fontSize = data.fontSize;
-                                        this.elements.textContentDiv.style.fontSize = `${this.fontSize}px`;
-                                    }
-                                    if (data.currentPosition !== undefined) {
-                                        this.currentPosition = data.currentPosition;
-                                        this.elements.textContentDiv.style.transform = `translateY(${window.innerHeight - (this.currentPosition / 10)}px)`;
-                                    }
-                                    if (data.isPlaying !== undefined) {
-                                        if (data.isPlaying && !this.isRunning) {
-                                            this.play();
-                                        } else if (!data.isPlaying && this.isRunning) {
-                                            this.pause();
-                                        }
-                                    }
-                                }
-
-                                showStatus(message, type = 'info') {
-                                    const statusElement = this.elements.status;
-                                    statusElement.textContent = message;
-                                    statusElement.className = `status show ${type}`;
-                                    setTimeout(() => {
-                                        statusElement.classList.remove('show');
-                                    }, 3000);
-                                }
-                            }
-
-                            let secondaryTeleprompterInstance;
-                            window.onload = () => {
-                                console.log("Janela secundária carregada. Inicializando controlador..."); // Debugging
-                                secondaryTeleprompterInstance = new SecondaryTeleprompterController();
-                                window.teleprompterInstance = secondaryTeleprompterInstance; // Torna acessível à janela pai
-                            };
-                        <\/script>
+                        <div class="text-content" id="textContent">${this.textContent}</div>
                     </body>
                     </html>
                 `;
+
+                this.newWindow = window.open('', '_blank', 'width=1920,height=1080,fullscreen=yes');
+                this.newWindow.document.write(newWindowHtml);
+                this.newWindow.document.close();
                 
-                // Abre a nova janela com o HTML template
-                const url = `data:text/html;charset=utf-8,${encodeURIComponent(newWindowHtmlTemplate)}`;
-                try {
-                    // Adicionando 'noopener' e 'noreferrer' para segurança
-                    this.newWindow = window.open(url, '_blank', `width=1920,height=1080,noopener,noreferrer`); 
-
-                    if (this.newWindow) {
-                        this.showStatus('Nova janela aberta. Aguardando carregamento para sincronizar...', 'info');
-                        // Espera a nova janela carregar antes de enviar a mensagem inicial
-                        this.newWindow.onload = () => {
-                            console.log("Nova janela secundária totalmente carregada. Enviando conteúdo inicial."); // Debugging
-                            this.syncNewWindow(); // Envia o conteúdo inicial e estado
-                            this.showStatus('Nova janela pronta para ecrã secundário. Arraste para o monitor externo.', 'success');
-                        };
-
-                    } else {
-                        // Caso o pop-up seja bloqueado antes mesmo do try-catch pegar
-                        console.warn("window.open retornou null. Pop-up provavelmente bloqueado."); // Debugging
-                        this.showStatus('Não foi possível abrir a nova janela. Verifique as permissões de pop-up.', 'error');
-                    }
-                } catch (e) {
-                    // Captura erros de segurança ou outros que impeçam a abertura
-                    console.error("Erro ao abrir nova janela:", e); // Debugging
-                    this.showStatus('Erro ao abrir nova janela. Verifique as permissões de pop-up ou a consola para detalhes.', 'error');
-                }
-            }
-
-            // Função para enviar dados para a nova janela
-            syncNewWindow() {
-                // Adiciona um pequeno delay para garantir que a janela e o seu JS estejam prontos
-                // especialmente após a abertura inicial.
-                setTimeout(() => {
-                    if (this.newWindow && !this.newWindow.closed && this.newWindow.teleprompterInstance) {
-                        console.log("Sincronizando com a nova janela..."); // Debugging
-                        this.newWindow.postMessage({
-                            type: 'teleprompterUpdate',
-                            payload: {
-                                textContent: this.textContent,
-                                speed: this.speed,
-                                fontSize: this.fontSize,
-                                currentPosition: this.currentPosition,
-                                isPlaying: this.isRunning
-                            }
-                        }, '*'); // Em produção, substitua '*' pela origem do seu GitHub Pages (ex: 'https://seu-usuario.github.io')
-                    } else if (this.newWindow && !this.newWindow.closed) {
-                        console.log("Nova janela existe, mas teleprompterInstance ainda não está disponível."); // Debugging
-                        // Tenta sincronizar novamente em breve se a instância ainda não estiver pronta
-                        setTimeout(() => this.syncNewWindow(), 200); 
-                    }
-                }, 50); // Pequeno delay inicial para dar tempo à nova janela para iniciar
+                this.showStatus('Nova janela aberta para ecrã secundário', 'success');
             }
 
             showStatus(message, type = 'info') {
-                const statusElement = this.elements.status;
-                statusElement.textContent = message;
-                statusElement.className = `status show ${type}`;
+                this.elements.status.textContent = message;
+                this.elements.status.className = `status show ${type}`;
                 
                 setTimeout(() => {
-                    statusElement.classList.remove('show');
+                    this.elements.status.classList.remove('show');
                 }, 3000);
             }
         }
 
+        // Global functions for buttons
+        let teleprompter;
+
+        function startTeleprompter() {
+            teleprompter.startTeleprompter();
+        }
+
+        function openNewWindow() {
+            teleprompter.openNewWindow();
+        }
+
+        function resetTeleprompter() {
+            teleprompter.resetTeleprompter();
+        }
+
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            window.teleprompter = new TeleprompterController(); // Torna a instância global para fácil acesso
+            teleprompter = new TeleprompterController();
         });
     </script>
 </body>
