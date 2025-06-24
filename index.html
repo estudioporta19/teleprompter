@@ -384,7 +384,7 @@ Dica: Use frases curtas e parágrafos bem definidos para melhor legibilidade."><
                 // File input
                 this.elements.fileInput.addEventListener('change', (e) => this.loadFile(e));
                 
-                // Sliders
+                // Sliders - basic functionality
                 this.elements.speedSlider.addEventListener('input', (e) => {
                     this.speed = parseFloat(e.target.value);
                     this.elements.speedValue.textContent = this.speed.toFixed(1);
@@ -652,223 +652,277 @@ Boa apresentação!`;
             }
 
             openNewWindow() {
+                this.textContent = this.elements.textInput.value;
                 if (!this.textContent.trim()) {
                     this.showStatus('Adicione texto antes de abrir o teleprompter!', 'error');
                     return;
                 }
 
-                const newWindowHtml = `
-                    <!DOCTYPE html>
-                    <html lang="pt">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>Teleprompter - Ecrã Secundário</title>
-                        <style>
-                            * { margin: 0; padding: 0; box-sizing: border-box; }
-                            body { 
-                                background: #000; 
-                                color: white; 
-                                overflow: hidden; 
-                                font-family: Arial, sans-serif; 
-                                touch-action: pan-y;
-                            }
-                            .text-content { 
-                                padding: 50px; 
-                                font-size: ${this.fontSize}px; 
-                                line-height: 1.6; 
-                                white-space: pre-wrap; 
-                                transform: translateY(100vh); 
-                                transition: transform 0.1s linear; 
-                            }
-                            .status {
-                                position: fixed;
-                                top: 20px;
-                                right: 20px;
-                                background: rgba(0, 0, 0, 0.8);
-                                color: white;
-                                padding: 10px 20px;
-                                border-radius: 20px;
-                                font-weight: bold;
-                                z-index: 1001;
-                                display: none;
-                            }
-                            .status.show { display: block; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="status" id="status"></div>
-                        <div class="text-content" id="textContent">${this.textContent}</div>
-                        <script>
-                            let currentPosition = 0;
-                            let isRunning = false;
-                            let speed = ${this.speed};
-                            let animationId = null;
-                            let startY = 0;
-                            let startTime = 0;
-                            let isLongPress = false;
+                console.log('Tentando abrir nova janela...');
 
-                            function showStatus(message) {
-                                const status = document.getElementById('status');
-                                status.textContent = message;
-                                status.classList.add('show');
-                                setTimeout(() => status.classList.remove('show'), 3000);
-                            }
-
-                            function animate() {
-                                if (!isRunning) return;
-                                currentPosition += speed;
-                                document.getElementById('textContent').style.transform = \`translateY(\${100 - (currentPosition / 10)}vh)\`;
-                                
-                                if (currentPosition >= getMaxPosition()) {
-                                    pause();
-                                    showStatus('Fim do texto alcançado');
-                                    return;
+                try {
+                    const newWindowHtml = `
+                        <!DOCTYPE html>
+                        <html lang="pt">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Teleprompter - Ecrã Secundário</title>
+                            <style>
+                                * { margin: 0; padding: 0; box-sizing: border-box; }
+                                body { 
+                                    background: #000; 
+                                    color: white; 
+                                    overflow: hidden; 
+                                    font-family: Arial, sans-serif; 
+                                    touch-action: pan-y;
                                 }
-                                animationId = requestAnimationFrame(animate);
-                            }
-
-                            function play() {
-                                isRunning = true;
-                                showStatus('Reproduzindo');
-                                animate();
-                            }
-
-                            function pause() {
-                                isRunning = false;
-                                showStatus('Pausado');
-                                if (animationId) cancelAnimationFrame(animationId);
-                            }
-
-                            function togglePlayPause() {
-                                isRunning ? pause() : play();
-                            }
-
-                            function adjustSpeed(delta) {
-                                speed = Math.max(0, Math.min(5, speed + delta));
-                                showStatus(\`Velocidade: \${speed.toFixed(1)}\`);
-                            }
-
-                            function adjustPosition(delta) {
-                                currentPosition = Math.max(0, Math.min(getMaxPosition(), currentPosition + delta));
-                                document.getElementById('textContent').style.transform = \`translateY(\${100 - (currentPosition / 10)}vh)\`;
-                            }
-
-                            function resetPosition() {
-                                currentPosition = 0;
-                                document.getElementById('textContent').style.transform = 'translateY(100vh)';
-                                showStatus('Posição reiniciada');
-                            }
-
-                            function getMaxPosition() {
-                                const contentHeight = document.getElementById('textContent').scrollHeight;
-                                const windowHeight = window.innerHeight;
-                                return Math.max(0, (contentHeight + windowHeight) * 10);
-                            }
-
-                            // Keyboard controls
-                            document.addEventListener('keydown', (e) => {
-                                switch(e.code) {
-                                    case 'Space':
-                                        e.preventDefault();
-                                        togglePlayPause();
-                                        break;
-                                    case 'ArrowUp':
-                                        e.preventDefault();
-                                        adjustSpeed(0.2);
-                                        break;
-                                    case 'ArrowDown':
-                                        e.preventDefault();
-                                        adjustSpeed(-0.2);
-                                        break;
-                                    case 'ArrowLeft':
-                                        e.preventDefault();
-                                        adjustPosition(-100);
-                                        break;
-                                    case 'ArrowRight':
-                                        e.preventDefault();
-                                        adjustPosition(100);
-                                        break;
-                                    case 'KeyR':
-                                        e.preventDefault();
-                                        resetPosition();
-                                        break;
+                                .text-content { 
+                                    padding: 50px; 
+                                    font-size: ${this.fontSize}px; 
+                                    line-height: 1.6; 
+                                    white-space: pre-wrap; 
+                                    transform: translateY(100vh); 
+                                    transition: transform 0.1s linear; 
                                 }
-                            });
+                                .status {
+                                    position: fixed;
+                                    top: 20px;
+                                    right: 20px;
+                                    background: rgba(0, 0, 0, 0.8);
+                                    color: white;
+                                    padding: 10px 20px;
+                                    border-radius: 20px;
+                                    font-weight: bold;
+                                    z-index: 1001;
+                                    display: none;
+                                }
+                                .status.show { display: block; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="status" id="status"></div>
+                            <div class="text-content" id="textContent">${this.textContent}</div>
+                            <script>
+                                let currentPosition = 0;
+                                let isRunning = false;
+                                let speed = ${this.speed};
+                                let animationId = null;
+                                let startY = 0;
+                                let startTime = 0;
+                                let isLongPress = false;
 
-                            // Touch controls
-                            document.addEventListener('touchstart', (e) => {
-                                e.preventDefault();
-                                const touch = e.touches[0];
-                                startY = touch.clientY;
-                                startTime = Date.now();
-                                isLongPress = false;
+                                function showStatus(message) {
+                                    const status = document.getElementById('status');
+                                    status.textContent = message;
+                                    status.classList.add('show');
+                                    setTimeout(() => status.classList.remove('show'), 3000);
+                                }
 
-                                setTimeout(() => {
-                                    if (Date.now() - startTime >= 500) {
-                                        isLongPress = true;
-                                        resetPosition();
+                                function animate() {
+                                    if (!isRunning) return;
+                                    currentPosition += speed;
+                                    document.getElementById('textContent').style.transform = \`translateY(\${100 - (currentPosition / 10)}vh)\`;
+                                    
+                                    if (currentPosition >= getMaxPosition()) {
+                                        pause();
+                                        showStatus('Fim do texto alcançado');
+                                        return;
                                     }
-                                }, 500);
-                            }, { passive: false });
+                                    animationId = requestAnimationFrame(animate);
+                                }
 
-                            document.addEventListener('touchend', (e) => {
-                                e.preventDefault();
-                                if (isLongPress) return;
+                                function play() {
+                                    isRunning = true;
+                                    showStatus('Reproduzindo');
+                                    animate();
+                                }
 
-                                const touch = e.changedTouches[0];
-                                const endY = touch.clientY;
-                                const deltaY = startY - endY;
-                                const deltaTime = Date.now() - startTime;
+                                function pause() {
+                                    isRunning = false;
+                                    showStatus('Pausado');
+                                    if (animationId) cancelAnimationFrame(animationId);
+                                }
 
-                                if (Math.abs(deltaY) < 30 && deltaTime < 300) {
-                                    togglePlayPause();
-                                } else if (Math.abs(deltaY) > 50) {
-                                    if (deltaY > 0) {
-                                        adjustSpeed(0.5);
-                                        showStatus('Velocidade aumentada');
-                                    } else {
-                                        if (speed > 0.5) {
-                                            adjustSpeed(-0.5);
-                                            showStatus('Velocidade diminuída');
+                                function togglePlayPause() {
+                                    isRunning ? pause() : play();
+                                }
+
+                                function adjustSpeed(delta) {
+                                    speed = Math.max(0, Math.min(5, speed + delta));
+                                    showStatus(\`Velocidade: \${speed.toFixed(1)}\`);
+                                }
+
+                                function adjustPosition(delta) {
+                                    currentPosition = Math.max(0, Math.min(getMaxPosition(), currentPosition + delta));
+                                    document.getElementById('textContent').style.transform = \`translateY(\${100 - (currentPosition / 10)}vh)\`;
+                                }
+
+                                function resetPosition() {
+                                    currentPosition = 0;
+                                    document.getElementById('textContent').style.transform = 'translateY(100vh)';
+                                    showStatus('Posição reiniciada');
+                                }
+
+                                function getMaxPosition() {
+                                    const contentHeight = document.getElementById('textContent').scrollHeight;
+                                    const windowHeight = window.innerHeight;
+                                    return Math.max(0, (contentHeight + windowHeight) * 10);
+                                }
+
+                                // Keyboard controls
+                                document.addEventListener('keydown', (e) => {
+                                    switch(e.code) {
+                                        case 'Space':
+                                            e.preventDefault();
+                                            togglePlayPause();
+                                            break;
+                                        case 'ArrowUp':
+                                            e.preventDefault();
+                                            adjustSpeed(0.2);
+                                            break;
+                                        case 'ArrowDown':
+                                            e.preventDefault();
+                                            adjustSpeed(-0.2);
+                                            break;
+                                        case 'ArrowLeft':
+                                            e.preventDefault();
+                                            adjustPosition(-100);
+                                            break;
+                                        case 'ArrowRight':
+                                            e.preventDefault();
+                                            adjustPosition(100);
+                                            break;
+                                        case 'KeyR':
+                                            e.preventDefault();
+                                            resetPosition();
+                                            break;
+                                    }
+                                });
+
+                                // Touch controls
+                                document.addEventListener('touchstart', (e) => {
+                                    e.preventDefault();
+                                    const touch = e.touches[0];
+                                    startY = touch.clientY;
+                                    startTime = Date.now();
+                                    isLongPress = false;
+
+                                    setTimeout(() => {
+                                        if (Date.now() - startTime >= 500) {
+                                            isLongPress = true;
+                                            resetPosition();
+                                        }
+                                    }, 500);
+                                }, { passive: false });
+
+                                document.addEventListener('touchend', (e) => {
+                                    e.preventDefault();
+                                    if (isLongPress) return;
+
+                                    const touch = e.changedTouches[0];
+                                    const endY = touch.clientY;
+                                    const deltaY = startY - endY;
+                                    const deltaTime = Date.now() - startTime;
+
+                                    if (Math.abs(deltaY) < 30 && deltaTime < 300) {
+                                        togglePlayPause();
+                                    } else if (Math.abs(deltaY) > 50) {
+                                        if (deltaY > 0) {
+                                            adjustSpeed(0.5);
+                                            showStatus('Velocidade aumentada');
                                         } else {
-                                            pause();
+                                            if (speed > 0.5) {
+                                                adjustSpeed(-0.5);
+                                                showStatus('Velocidade diminuída');
+                                            } else {
+                                                pause();
+                                            }
                                         }
                                     }
-                                }
-                            }, { passive: false });
+                                }, { passive: false });
 
-                            document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
-                            document.addEventListener('click', togglePlayPause);
+                                document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+                                document.addEventListener('click', togglePlayPause);
 
-                            // Listen for updates from parent window
-                            window.addEventListener('message', (event) => {
-                                if (event.data.type === 'updateText') {
-                                    document.getElementById('textContent').textContent = event.data.text;
-                                }
-                                if (event.data.type === 'updateFontSize') {
-                                    document.getElementById('textContent').style.fontSize = event.data.fontSize + 'px';
-                                }
-                                if (event.data.type === 'updateSpeed') {
-                                    speed = event.data.speed;
-                                }
-                            });
+                                // Listen for updates from parent window
+                                window.addEventListener('message', (event) => {
+                                    if (event.data.type === 'updateText') {
+                                        document.getElementById('textContent').textContent = event.data.text;
+                                    }
+                                    if (event.data.type === 'updateFontSize') {
+                                        document.getElementById('textContent').style.fontSize = event.data.fontSize + 'px';
+                                    }
+                                    if (event.data.type === 'updateSpeed') {
+                                        speed = event.data.speed;
+                                    }
+                                });
 
-                            // Auto-start message
-                            showStatus('Teleprompter pronto - Pressione ESPAÇO para começar');
-                        </script>
-                    </body>
-                    </html>
-                `;
+                                // Auto-start message
+                                setTimeout(() => {
+                                    showStatus('Teleprompter pronto - Pressione ESPAÇO para começar');
+                                }, 500);
+                            </script>
+                        </body>
+                        </html>
+                    `;
 
-                this.newWindow = window.open('', '_blank', 'width=1920,height=1080,fullscreen=yes');
-                this.newWindow.document.write(newWindowHtml);
-                this.newWindow.document.close();
-                
-                this.showStatus('Teleprompter iniciado no ecrã secundário', 'success');
-                
-                // Setup communication with new window
-                this.setupWindowCommunication();
+                    this.newWindow = window.open('', '_blank', 'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=no,resizable=yes,width=1200,height=800');
+                    
+                    if (!this.newWindow) {
+                        this.showStatus('Erro: Pop-ups bloqueadas! Permita pop-ups para este site.', 'error');
+                        return;
+                    }
+
+                    this.newWindow.document.write(newWindowHtml);
+                    this.newWindow.document.close();
+                    this.newWindow.focus();
+                    
+                    this.showStatus('Teleprompter iniciado no ecrã secundário', 'success');
+                    
+                    // Setup communication with new window
+                    this.setupWindowCommunication();
+
+                } catch (error) {
+                    console.error('Erro ao abrir janela:', error);
+                    this.showStatus('Erro ao abrir nova janela. Verifique se os pop-ups estão permitidos.', 'error');
+                }
+            }
+
+            setupWindowCommunication() {
+                // Send updates to the new window when controls change
+                this.elements.speedSlider.addEventListener('input', (e) => {
+                    this.speed = parseFloat(e.target.value);
+                    this.elements.speedValue.textContent = this.speed.toFixed(1);
+                    if (this.newWindow && !this.newWindow.closed) {
+                        this.newWindow.postMessage({
+                            type: 'updateSpeed',
+                            speed: this.speed
+                        }, '*');
+                    }
+                });
+
+                this.elements.fontSizeSlider.addEventListener('input', (e) => {
+                    this.fontSize = parseInt(e.target.value);
+                    this.elements.fontSizeValue.textContent = this.fontSize;
+                    this.updateFontSize();
+                    if (this.newWindow && !this.newWindow.closed) {
+                        this.newWindow.postMessage({
+                            type: 'updateFontSize',
+                            fontSize: this.fontSize
+                        }, '*');
+                    }
+                });
+
+                this.elements.textInput.addEventListener('input', () => {
+                    this.textContent = this.elements.textInput.value;
+                    if (this.newWindow && !this.newWindow.closed) {
+                        this.newWindow.postMessage({
+                            type: 'updateText',
+                            text: this.textContent
+                        }, '*');
+                    }
+                });
             }
 
             showStatus(message, type = 'info') {
@@ -883,10 +937,6 @@ Boa apresentação!`;
 
         // Global functions for buttons
         let teleprompter;
-
-        function startTeleprompter() {
-            teleprompter.startTeleprompter();
-        }
 
         function openNewWindow() {
             teleprompter.openNewWindow();
